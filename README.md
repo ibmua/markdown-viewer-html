@@ -1,10 +1,14 @@
+<p align="left"><img src="icon.svg" alt="MD" width="96" height="96"></p>
+
 # markdown-viewer-html
 
-A single-file, zero-install markdown viewer. Open `index.html` in any browser,
-drag `.md` files onto the page, and read them rendered — GitHub-style, with
-dark mode, syntax highlighting, and tables.
+A single-file, zero-install markdown viewer & editor. Open `index.html` in any
+browser, drag `.md` files onto the page, and read or edit them rendered —
+GitHub-style, with dark mode, syntax highlighting, and tables.
 
-No build step, no server, no upload: everything runs locally in the browser.
+**No build step, no server, no network, no upload.** All dependencies (marked,
+DOMPurify, highlight.js + theme) are inlined into `index.html`, so the whole
+app is one self-contained file you can double-click offline.
 
 ![Screenshot](screenshot.png)
 
@@ -59,17 +63,19 @@ Browser JS can't silently write to your disk, so:
 A yellow "Unsaved changes" bar appears as soon as you type, and the browser
 will warn you if you try to close the tab with unsaved work.
 
-## Dependencies
+## Dependencies (all inlined)
 
-Loaded at runtime from jsDelivr CDN:
+Every runtime dependency is bundled directly into `index.html`. Nothing is
+fetched from the network at runtime — open the file on an airplane, on a USB
+stick, behind a firewall, whatever, and it works.
 
-- [marked](https://github.com/markedjs/marked) — markdown → HTML
-- [DOMPurify](https://github.com/cure53/DOMPurify) — XSS sanitization
-- [highlight.js](https://github.com/highlightjs/highlight.js) — code blocks
+- [marked](https://github.com/markedjs/marked) — markdown → HTML (MIT)
+- [DOMPurify](https://github.com/cure53/DOMPurify) — XSS sanitization (Apache-2.0 / MPL-2.0)
+- [highlight.js](https://github.com/highlightjs/highlight.js) — syntax highlighting (BSD-3)
+- Favicon — an inline SVG data URI (no separate file needed)
 
-Nothing is bundled; your browser pulls them on first open and caches them.
-If you need fully offline use, vendor the three scripts into the repo and
-update the `<script>` / `<link>` tags accordingly.
+The HTML is ~200 KB. To upgrade a dependency, re-download its minified build
+and paste it into the corresponding inline `<script>` block.
 
 ## License
 
