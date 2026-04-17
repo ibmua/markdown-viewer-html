@@ -12,13 +12,13 @@
   :root{
     --bg:#ffffff; --fg:#1f2328; --muted:#656d76; --border:#d0d7de;
     --sidebar:#f6f8fa; --accent:#0969da; --hover:#eaeef2; --active:#ddf4ff;
-    --code-bg:#f6f8fa;
+    --code-bg:#f6f8fa; --warn-bg:#fff8c5; --warn-border:#d4a72c; --warn-fg:#633c01;
   }
   @media (prefers-color-scheme: dark){
     :root{
       --bg:#0d1117; --fg:#e6edf3; --muted:#8d96a0; --border:#30363d;
       --sidebar:#161b22; --accent:#2f81f7; --hover:#21262d; --active:#1f3556;
-      --code-bg:#161b22;
+      --code-bg:#161b22; --warn-bg:#3a2d06; --warn-border:#9e6a03; --warn-fg:#f2cc60;
     }
   }
   *{box-sizing:border-box}
@@ -26,7 +26,6 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
     font-size:15px;line-height:1.55}
   #app{display:flex;height:100%}
-  /* sidebar */
   #sidebar{width:280px;min-width:220px;max-width:480px;flex-shrink:0;
     background:var(--sidebar);border-right:1px solid var(--border);
     display:flex;flex-direction:column}
@@ -37,11 +36,17 @@
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
     padding:6px 10px;border:1px solid var(--border);border-radius:6px;
     background:var(--bg);color:var(--fg);cursor:pointer;font-size:13px;
-    font-weight:500}
+    font-weight:500;white-space:nowrap}
   .btn:hover{background:var(--hover)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn.primary:hover{filter:brightness(0.95)}
+  .btn.small{padding:4px 8px;font-size:12px}
   .btn-row{display:flex;gap:6px;flex-wrap:wrap}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .seg .btn{border:none;border-radius:0}
+  .seg .btn+.btn{border-left:1px solid var(--border)}
+  .seg .btn.on{background:var(--active);color:var(--accent);font-weight:600}
   #files{flex:1;overflow:auto;padding:6px}
   .file-item{display:flex;align-items:center;gap:8px;padding:7px 10px;
     border-radius:6px;cursor:pointer;font-size:13px;color:var(--fg);
@@ -49,40 +54,63 @@
   .file-item:hover{background:var(--hover)}
   .file-item.active{background:var(--active);color:var(--accent);font-weight:600}
   .file-item .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .file-item .dot{width:8px;height:8px;border-radius:50%;background:var(--warn-border);
+    visibility:hidden;flex-shrink:0}
+  .file-item.dirty .dot{visibility:visible}
   .file-item .close{opacity:0;border:none;background:transparent;color:inherit;
     cursor:pointer;padding:0 4px;font-size:16px;line-height:1}
   .file-item:hover .close,.file-item.active .close{opacity:.7}
   .file-item .close:hover{opacity:1}
   .empty{padding:20px;color:var(--muted);font-size:13px;text-align:center}
 
-  /* main */
-  #main{flex:1;overflow:auto;position:relative}
+  #main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
   #dropzone{position:absolute;inset:0;display:none;align-items:center;
     justify-content:center;background:rgba(9,105,218,.08);
     border:3px dashed var(--accent);pointer-events:none;z-index:10;
     color:var(--accent);font-size:20px;font-weight:600}
   #dropzone.active{display:flex}
+
+  #toolbar{background:var(--bg);border-bottom:1px solid var(--border);
+    padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:13px;
+    color:var(--muted);flex-shrink:0}
+  #toolbar .path{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #toolbar .size{flex-shrink:0}
+  #warnBar{background:var(--warn-bg);border-bottom:1px solid var(--warn-border);
+    color:var(--warn-fg);padding:8px 16px;font-size:13px;display:none}
+  #warnBar.show{display:block}
+  #warnBar strong{font-weight:600}
+
+  #body{flex:1;overflow:auto;position:relative}
+  #body.split{display:flex;overflow:hidden}
+  #editor{display:none;width:100%;height:100%;border:0;resize:none;
+    padding:24px 32px;background:var(--bg);color:var(--fg);
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;
+    line-height:1.6;outline:none;tab-size:2}
+  #body.edit #editor{display:block}
+  #body.split #editor{flex:1;border-right:1px solid var(--border);display:block}
+  #body.edit #content{display:none}
+  #body.split #content{flex:1;overflow:auto}
+
   .welcome{max-width:640px;margin:60px auto;padding:0 32px;color:var(--muted)}
   .welcome h2{color:var(--fg);font-weight:600;margin-top:0}
   .welcome kbd{background:var(--sidebar);border:1px solid var(--border);
     border-radius:4px;padding:2px 6px;font-size:12px;font-family:ui-monospace,
     SFMono-Regular,Menlo,monospace;color:var(--fg)}
 
-  /* markdown */
   #content{max-width:900px;margin:0 auto;padding:32px 48px 120px}
+  #body.split #content{max-width:none;margin:0;padding:24px 32px}
   #content h1,#content h2,#content h3,#content h4,#content h5,#content h6{
     margin-top:1.5em;margin-bottom:.6em;font-weight:600;line-height:1.25}
   #content h1{font-size:2em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
   #content h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
   #content h3{font-size:1.25em}
   #content h4{font-size:1em}
-  #content p,#content ul,#content ol,#content blockquote,#content pre,#content table{
-    margin:0 0 16px}
+  #content p,#content ul,#content ol,#content blockquote,#content pre,#content table{margin:0 0 16px}
   #content ul,#content ol{padding-left:2em}
   #content li+li{margin-top:.25em}
   #content li>p{margin-top:16px}
-  #content blockquote{padding:0 1em;color:var(--muted);
-    border-left:.25em solid var(--border)}
+  #content blockquote{padding:0 1em;color:var(--muted);border-left:.25em solid var(--border)}
   #content a{color:var(--accent);text-decoration:none}
   #content a:hover{text-decoration:underline}
   #content hr{height:.25em;padding:0;margin:24px 0;background:var(--border);border:0}
@@ -91,20 +119,12 @@
   #content pre{background:var(--code-bg);padding:16px;border-radius:6px;
     overflow:auto;font-size:85%;line-height:1.45}
   #content pre code{background:transparent;padding:0;font-size:100%}
-  #content table{border-collapse:collapse;display:block;overflow:auto;width:max-content;
-    max-width:100%}
+  #content table{border-collapse:collapse;display:block;overflow:auto;width:max-content;max-width:100%}
   #content th,#content td{border:1px solid var(--border);padding:6px 13px}
   #content tr:nth-child(2n){background:var(--sidebar)}
   #content img{max-width:100%;border-radius:6px}
   #content input[type=checkbox]{margin-right:.4em}
   #content .task-list-item{list-style:none;margin-left:-1.5em}
-
-  /* toolbar */
-  #toolbar{position:sticky;top:0;z-index:5;background:var(--bg);
-    border-bottom:1px solid var(--border);padding:8px 16px;display:flex;
-    align-items:center;gap:10px;font-size:13px;color:var(--muted)}
-  #toolbar .path{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .hidden{display:none !important}
 </style>
 </head>
@@ -115,6 +135,7 @@
       <h1>Markdown Viewer</h1>
       <div class="btn-row">
         <button class="btn primary" id="openBtn">Open files…</button>
+        <button class="btn" id="newBtn" title="New empty file">New</button>
         <button class="btn" id="clearBtn" title="Close all">Clear</button>
       </div>
     </header>
@@ -124,31 +145,56 @@
   <main id="main">
     <div id="dropzone">Drop .md files here</div>
     <div id="toolbar" class="hidden">
+      <div class="seg" id="modeSeg">
+        <button class="btn small on" data-mode="view">Preview</button>
+        <button class="btn small" data-mode="split">Split</button>
+        <button class="btn small" data-mode="edit">Edit</button>
+      </div>
       <span class="path" id="curPath"></span>
-      <span id="curSize"></span>
+      <span class="size" id="curSize"></span>
+      <button class="btn small" id="saveBtn" title="Save back to the original file (if browser supports it)">Save</button>
+      <button class="btn small primary" id="downloadBtn" title="Download a copy">Download</button>
     </div>
-    <div id="content" class="welcome">
-      <h2>Open some markdown files</h2>
-      <p>Click <strong>Open files…</strong>, drag &amp; drop <code>.md</code> files
-      anywhere on this panel, or paste markdown text with <kbd>⌘V</kbd>.</p>
-      <p>Files stay in the sidebar so you can switch between them. Nothing is
-      uploaded anywhere — rendering happens locally in your browser.</p>
+    <div id="warnBar">
+      <strong>Unsaved changes.</strong>
+      <span id="warnMsg">Edits live in this tab only — click <em>Download</em> to keep them.</span>
+    </div>
+    <div id="body">
+      <textarea id="editor" spellcheck="false" placeholder="# Start typing markdown…"></textarea>
+      <div id="content" class="welcome">
+        <h2>Open some markdown files</h2>
+        <p>Click <strong>Open files…</strong>, drag &amp; drop <code>.md</code> files
+        anywhere on this panel, or paste markdown text with <kbd>⌘V</kbd>.</p>
+        <p>Files stay in the sidebar so you can switch between them. Nothing is
+        uploaded anywhere — rendering happens locally in your browser.</p>
+      </div>
     </div>
   </main>
 </div>
 <script>
 (() => {
-  const files = [];      // {id, name, path, size, text, html}
+  const files = [];                 // {id,name,size,text,html,dirty,handle}
   let activeId = null;
   let nextId = 1;
+  let mode = 'view';                // 'view' | 'split' | 'edit'
+  let renderTimer = null;
 
-  const $files   = document.getElementById('files');
-  const $content = document.getElementById('content');
-  const $toolbar = document.getElementById('toolbar');
-  const $curPath = document.getElementById('curPath');
-  const $curSize = document.getElementById('curSize');
-  const $drop    = document.getElementById('dropzone');
-  const $input   = document.getElementById('fileInput');
+  const $files    = document.getElementById('files');
+  const $content  = document.getElementById('content');
+  const $editor   = document.getElementById('editor');
+  const $body     = document.getElementById('body');
+  const $toolbar  = document.getElementById('toolbar');
+  const $curPath  = document.getElementById('curPath');
+  const $curSize  = document.getElementById('curSize');
+  const $drop     = document.getElementById('dropzone');
+  const $input    = document.getElementById('fileInput');
+  const $warnBar  = document.getElementById('warnBar');
+  const $warnMsg  = document.getElementById('warnMsg');
+  const $modeSeg  = document.getElementById('modeSeg');
+  const $saveBtn  = document.getElementById('saveBtn');
+  const $dlBtn    = document.getElementById('downloadBtn');
+
+  const hasFSA = 'showOpenFilePicker' in window;
 
   marked.setOptions({
     gfm: true,
@@ -161,148 +207,321 @@
     },
   });
 
-  function fmtBytes(n){
-    if (n < 1024) return n + ' B';
-    if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
-    return (n/1024/1024).toFixed(2) + ' MB';
-  }
-
-  function render(text){
-    const raw = marked.parse(text);
-    return DOMPurify.sanitize(raw, {ADD_ATTR: ['target']});
-  }
+  const fmtBytes = n => n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(2)+' MB';
+  const render = text => DOMPurify.sanitize(marked.parse(text), {ADD_ATTR:['target']});
+  const cur = () => files.find(f => f.id === activeId) || null;
 
   function renderSidebar(){
-    if (files.length === 0){
-      $files.innerHTML = '<div class="empty">No files open</div>';
-      return;
-    }
+    if (files.length === 0){ $files.innerHTML = '<div class="empty">No files open</div>'; return; }
     $files.innerHTML = '';
     for (const f of files){
       const el = document.createElement('div');
-      el.className = 'file-item' + (f.id === activeId ? ' active' : '');
-      el.innerHTML = `<span class="name" title="${f.path || f.name}">${f.name}</span>
+      el.className = 'file-item'
+        + (f.id === activeId ? ' active' : '')
+        + (f.dirty ? ' dirty' : '');
+      el.innerHTML = `<span class="dot" title="Unsaved changes"></span>
+                      <span class="name" title="${f.name}">${f.name}</span>
                       <button class="close" aria-label="Close">×</button>`;
       el.addEventListener('click', e => {
         if (e.target.classList.contains('close')) return;
         activate(f.id);
       });
       el.querySelector('.close').addEventListener('click', e => {
-        e.stopPropagation();
-        closeFile(f.id);
+        e.stopPropagation(); closeFile(f.id);
       });
       $files.appendChild(el);
     }
   }
 
-  function activate(id){
-    activeId = id;
-    const f = files.find(x => x.id === id);
+  function renderPreview(){
+    const f = cur(); if (!f) return;
+    f.html = render(f.text);
+    $content.innerHTML = f.html;
+    $content.querySelectorAll('a[href^="http"]').forEach(a => {
+      a.target = '_blank'; a.rel = 'noopener noreferrer';
+    });
+  }
+
+  function updateToolbar(){
+    const f = cur();
     if (!f){
       $toolbar.classList.add('hidden');
+      $warnBar.classList.remove('show');
+      document.title = 'MD Viewer';
+      return;
+    }
+    $toolbar.classList.remove('hidden');
+    $curPath.textContent = f.name;
+    $curSize.textContent = fmtBytes(f.size);
+    $warnBar.classList.toggle('show', !!f.dirty);
+    $warnMsg.textContent = f.handle
+      ? 'Click Save to write the changes back to the original file, or Download for a copy.'
+      : 'Edits live in this tab only — click Download to keep them.';
+    $saveBtn.disabled = !f.dirty;
+    $saveBtn.title = f.handle
+      ? 'Save back to the original file'
+      : (hasFSA ? 'Save As… (pick a location)' : 'This browser cannot save in place — use Download');
+    document.title = (f.dirty ? '● ' : '') + f.name + ' — MD Viewer';
+  }
+
+  function setMode(m){
+    if (!cur()) m = 'view';
+    mode = m;
+    $body.classList.toggle('edit',  m === 'edit');
+    $body.classList.toggle('split', m === 'split');
+    $modeSeg.querySelectorAll('.btn').forEach(b =>
+      b.classList.toggle('on', b.dataset.mode === m));
+    if (m === 'edit' || m === 'split'){
+      const f = cur();
+      if (f && $editor.value !== f.text) $editor.value = f.text;
+      setTimeout(() => $editor.focus(), 0);
+    }
+    if (m === 'view' || m === 'split') renderPreview();
+  }
+
+  function activate(id){
+    activeId = id;
+    const f = cur();
+    if (!f){
       $content.classList.add('welcome');
       $content.innerHTML = `<h2>Open some markdown files</h2>
-        <p>Click <strong>Open files…</strong>, drag &amp; drop <code>.md</code>
-        files anywhere on this panel, or paste markdown text with
-        <kbd>⌘V</kbd>.</p>`;
-    } else {
-      if (!f.html) f.html = render(f.text);
-      $content.classList.remove('welcome');
-      $content.innerHTML = f.html;
-      $toolbar.classList.remove('hidden');
-      $curPath.textContent = f.path || f.name;
-      $curSize.textContent = fmtBytes(f.size);
-      // make external links open in new tab
-      $content.querySelectorAll('a[href^="http"]').forEach(a => {
-        a.target = '_blank'; a.rel = 'noopener noreferrer';
-      });
-      document.title = f.name + ' — MD Viewer';
-      window.scrollTo(0,0);
-      document.getElementById('main').scrollTo(0,0);
+        <p>Click <strong>Open files…</strong> or drag <code>.md</code> files anywhere.</p>`;
+      $editor.value = '';
+      setMode('view'); updateToolbar(); renderSidebar();
+      return;
     }
+    $content.classList.remove('welcome');
+    $editor.value = f.text;
+    renderPreview();
+    updateToolbar();
     renderSidebar();
+    document.getElementById('body').scrollTo(0,0);
   }
 
   function closeFile(id){
     const i = files.findIndex(f => f.id === id);
     if (i < 0) return;
+    if (files[i].dirty && !confirm(`"${files[i].name}" has unsaved changes. Close without downloading?`)) return;
     files.splice(i, 1);
-    if (activeId === id) activeId = files[i] ? files[i].id : (files[i-1]?.id || null);
+    if (activeId === id) activeId = files[i]?.id || files[i-1]?.id || null;
     activate(activeId);
   }
 
-  async function addFiles(fileList){
-    const adds = [];
-    for (const file of fileList){
-      if (!/\.(md|markdown|mdx|txt)$/i.test(file.name) && !file.type.includes('markdown')){
-        // still accept if plain text
-        if (file.size > 10*1024*1024) continue;
-      }
-      try {
-        const text = await file.text();
-        const f = {
-          id: nextId++,
-          name: file.name,
-          path: file.webkitRelativePath || file.name,
-          size: file.size,
-          text,
-          html: null,
-        };
-        files.push(f);
-        adds.push(f);
-      } catch(e){ console.error('read failed', file.name, e); }
-    }
-    if (adds.length && !activeId) activate(adds[0].id);
-    else renderSidebar();
+  function markDirty(f){
+    if (!f.dirty){ f.dirty = true; updateToolbar(); renderSidebar(); }
   }
 
-  // file picker
-  document.getElementById('openBtn').addEventListener('click', () => $input.click());
-  $input.addEventListener('change', e => {
-    addFiles(e.target.files);
-    $input.value = '';
+  async function addFile(opts){
+    const f = {
+      id: nextId++,
+      name: opts.name,
+      size: opts.size ?? new Blob([opts.text]).size,
+      text: opts.text,
+      html: null,
+      dirty: false,
+      handle: opts.handle || null,
+    };
+    files.push(f);
+    return f;
+  }
+
+  async function addFromFileObject(file, handle){
+    try {
+      const text = await file.text();
+      return await addFile({ name: file.name, text, size: file.size, handle });
+    } catch(e){ console.error('read failed', file.name, e); return null; }
+  }
+
+  async function addFileList(fileList){
+    const added = [];
+    for (const file of fileList){
+      const f = await addFromFileObject(file);
+      if (f) added.push(f);
+    }
+    if (added.length && !activeId) activate(added[0].id);
+    else { renderSidebar(); updateToolbar(); }
+  }
+
+  async function openViaFSA(){
+    try {
+      const handles = await window.showOpenFilePicker({
+        multiple: true,
+        types: [{ description: 'Markdown', accept: {'text/markdown': ['.md','.markdown','.mdx','.txt']} }],
+      });
+      const added = [];
+      for (const h of handles){
+        try {
+          const file = await h.getFile();
+          const f = await addFromFileObject(file, h);
+          if (f) added.push(f);
+        } catch(e){ console.error(e); }
+      }
+      if (added.length && !activeId) activate(added[0].id);
+      else { renderSidebar(); updateToolbar(); }
+    } catch(e){
+      if (e.name !== 'AbortError') console.error(e);
+    }
+  }
+
+  document.getElementById('openBtn').addEventListener('click', () => {
+    if (hasFSA) openViaFSA(); else $input.click();
   });
+  $input.addEventListener('change', e => { addFileList(e.target.files); $input.value=''; });
+
+  document.getElementById('newBtn').addEventListener('click', async () => {
+    const f = await addFile({ name: 'Untitled.md', text: '# New document\n\n', size: 0 });
+    f.dirty = true;
+    activate(f.id);
+    setMode('edit');
+  });
+
   document.getElementById('clearBtn').addEventListener('click', () => {
+    const dirty = files.some(f => f.dirty);
+    if (dirty && !confirm('Close all files? Unsaved edits will be lost.')) return;
     files.length = 0; activeId = null; activate(null);
   });
 
-  // drag-drop
   let dragDepth = 0;
   window.addEventListener('dragenter', e => {
     if (!e.dataTransfer?.types.includes('Files')) return;
     dragDepth++; $drop.classList.add('active');
   });
-  window.addEventListener('dragleave', e => {
+  window.addEventListener('dragleave', () => {
     dragDepth = Math.max(0, dragDepth-1);
     if (dragDepth === 0) $drop.classList.remove('active');
   });
-  window.addEventListener('dragover', e => { e.preventDefault(); });
-  window.addEventListener('drop', e => {
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('drop', async e => {
     e.preventDefault(); dragDepth = 0; $drop.classList.remove('active');
-    if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files);
+    const items = e.dataTransfer?.items;
+    const added = [];
+    if (items && items.length && items[0].getAsFileSystemHandle){
+      for (const it of items){
+        if (it.kind !== 'file') continue;
+        let handle = null;
+        try { handle = await it.getAsFileSystemHandle(); } catch(_) {}
+        const file = it.getAsFile();
+        if (!file) continue;
+        const f = await addFromFileObject(file, handle && handle.kind === 'file' ? handle : null);
+        if (f) added.push(f);
+      }
+    } else if (e.dataTransfer?.files?.length){
+      for (const file of e.dataTransfer.files){
+        const f = await addFromFileObject(file);
+        if (f) added.push(f);
+      }
+    }
+    if (added.length && !activeId) activate(added[0].id);
+    else { renderSidebar(); updateToolbar(); }
   });
 
-  // paste markdown
-  window.addEventListener('paste', e => {
+  window.addEventListener('paste', async e => {
+    if (document.activeElement === $editor) return;
     const t = e.clipboardData?.getData('text/plain');
     if (!t || t.length < 2) return;
-    const f = {
-      id: nextId++,
+    const f = await addFile({
       name: 'Pasted ' + new Date().toLocaleTimeString() + '.md',
-      path: '(clipboard)', size: t.length, text: t, html: null,
-    };
-    files.push(f);
+      text: t, size: t.length,
+    });
+    f.dirty = true;
     activate(f.id);
   });
 
-  // keyboard: ctrl/cmd+O opens picker; ctrl/cmd+W closes active
-  window.addEventListener('keydown', e => {
-    const mod = e.metaKey || e.ctrlKey;
-    if (mod && e.key.toLowerCase() === 'o'){ e.preventDefault(); $input.click(); }
-    if (mod && e.key.toLowerCase() === 'w' && activeId){ e.preventDefault(); closeFile(activeId); }
+  $modeSeg.addEventListener('click', e => {
+    const b = e.target.closest('[data-mode]');
+    if (b) setMode(b.dataset.mode);
   });
 
-  renderSidebar();
+  $editor.addEventListener('input', () => {
+    const f = cur(); if (!f) return;
+    f.text = $editor.value;
+    f.size = new Blob([f.text]).size;
+    markDirty(f);
+    $curSize.textContent = fmtBytes(f.size);
+    if (mode === 'split'){
+      clearTimeout(renderTimer);
+      renderTimer = setTimeout(renderPreview, 120);
+    }
+  });
+
+  $editor.addEventListener('keydown', e => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (mod && e.key.toLowerCase() === 's'){ e.preventDefault(); doSave(); return; }
+    if (e.key === 'Tab' && !e.shiftKey){
+      e.preventDefault();
+      const s = $editor.selectionStart, t = $editor.selectionEnd;
+      $editor.setRangeText('  ', s, t, 'end');
+      $editor.dispatchEvent(new Event('input'));
+    }
+  });
+
+  async function doSave(){
+    const f = cur(); if (!f || !f.dirty) return;
+    if (f.handle){
+      try {
+        const perm = await f.handle.queryPermission?.({ mode: 'readwrite' });
+        if (perm !== 'granted'){
+          const req = await f.handle.requestPermission?.({ mode: 'readwrite' });
+          if (req !== 'granted') throw new Error('permission denied');
+        }
+        const w = await f.handle.createWritable();
+        await w.write(f.text); await w.close();
+        f.dirty = false; updateToolbar(); renderSidebar();
+        return;
+      } catch(e){
+        console.error('in-place save failed', e);
+        alert('Could not save to the original file (' + e.message + '). Falling back to Save As.');
+      }
+    }
+    if (hasFSA && window.showSaveFilePicker){
+      try {
+        const h = await window.showSaveFilePicker({
+          suggestedName: f.name,
+          types: [{ description: 'Markdown', accept: {'text/markdown': ['.md']} }],
+        });
+        const w = await h.createWritable();
+        await w.write(f.text); await w.close();
+        f.handle = h; f.name = h.name || f.name;
+        f.dirty = false; updateToolbar(); renderSidebar();
+        return;
+      } catch(e){
+        if (e.name === 'AbortError') return;
+        console.error(e);
+      }
+    }
+    triggerDownload(f);
+    f.dirty = false; updateToolbar(); renderSidebar();
+  }
+
+  function triggerDownload(f){
+    const blob = new Blob([f.text], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = f.name.match(/\.(md|markdown|mdx|txt)$/i) ? f.name : (f.name + '.md');
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  $saveBtn.addEventListener('click', doSave);
+  $dlBtn.addEventListener('click', () => { const f = cur(); if (f) triggerDownload(f); });
+
+  window.addEventListener('keydown', e => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (!mod) return;
+    const k = e.key.toLowerCase();
+    if (k === 'o'){ e.preventDefault(); document.getElementById('openBtn').click(); }
+    else if (k === 'w' && activeId){ e.preventDefault(); closeFile(activeId); }
+    else if (k === 's' && activeId){ e.preventDefault(); doSave(); }
+    else if (k === 'e' && activeId){ e.preventDefault();
+      setMode(mode === 'edit' ? 'view' : 'edit'); }
+  });
+
+  window.addEventListener('beforeunload', e => {
+    if (files.some(f => f.dirty)){ e.preventDefault(); e.returnValue = ''; }
+  });
+
+  renderSidebar(); updateToolbar();
 })();
 </script>
 </body>
