@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MD Viewer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github.min.css">
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/common.min.js"></script>
+<style>
+  :root{
+    --bg:#ffffff; --fg:#1f2328; --muted:#656d76; --border:#d0d7de;
+    --sidebar:#f6f8fa; --accent:#0969da; --hover:#eaeef2; --active:#ddf4ff;
+    --code-bg:#f6f8fa;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d1117; --fg:#e6edf3; --muted:#8d96a0; --border:#30363d;
+      --sidebar:#161b22; --accent:#2f81f7; --hover:#21262d; --active:#1f3556;
+      --code-bg:#161b22;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:15px;line-height:1.55}
+  #app{display:flex;height:100%}
+  /* sidebar */
+  #sidebar{width:280px;min-width:220px;max-width:480px;flex-shrink:0;
+    background:var(--sidebar);border-right:1px solid var(--border);
+    display:flex;flex-direction:column}
+  #sidebar header{padding:14px 16px;border-bottom:1px solid var(--border);
+    display:flex;flex-direction:column;gap:8px}
+  #sidebar h1{font-size:14px;margin:0;font-weight:600;letter-spacing:.02em;
+    color:var(--muted);text-transform:uppercase}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    padding:6px 10px;border:1px solid var(--border);border-radius:6px;
+    background:var(--bg);color:var(--fg);cursor:pointer;font-size:13px;
+    font-weight:500}
+  .btn:hover{background:var(--hover)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(0.95)}
+  .btn-row{display:flex;gap:6px;flex-wrap:wrap}
+  #files{flex:1;overflow:auto;padding:6px}
+  .file-item{display:flex;align-items:center;gap:8px;padding:7px 10px;
+    border-radius:6px;cursor:pointer;font-size:13px;color:var(--fg);
+    user-select:none}
+  .file-item:hover{background:var(--hover)}
+  .file-item.active{background:var(--active);color:var(--accent);font-weight:600}
+  .file-item .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .file-item .close{opacity:0;border:none;background:transparent;color:inherit;
+    cursor:pointer;padding:0 4px;font-size:16px;line-height:1}
+  .file-item:hover .close,.file-item.active .close{opacity:.7}
+  .file-item .close:hover{opacity:1}
+  .empty{padding:20px;color:var(--muted);font-size:13px;text-align:center}
+
+  /* main */
+  #main{flex:1;overflow:auto;position:relative}
+  #dropzone{position:absolute;inset:0;display:none;align-items:center;
+    justify-content:center;background:rgba(9,105,218,.08);
+    border:3px dashed var(--accent);pointer-events:none;z-index:10;
+    color:var(--accent);font-size:20px;font-weight:600}
+  #dropzone.active{display:flex}
+  .welcome{max-width:640px;margin:60px auto;padding:0 32px;color:var(--muted)}
+  .welcome h2{color:var(--fg);font-weight:600;margin-top:0}
+  .welcome kbd{background:var(--sidebar);border:1px solid var(--border);
+    border-radius:4px;padding:2px 6px;font-size:12px;font-family:ui-monospace,
+    SFMono-Regular,Menlo,monospace;color:var(--fg)}
+
+  /* markdown */
+  #content{max-width:900px;margin:0 auto;padding:32px 48px 120px}
+  #content h1,#content h2,#content h3,#content h4,#content h5,#content h6{
+    margin-top:1.5em;margin-bottom:.6em;font-weight:600;line-height:1.25}
+  #content h1{font-size:2em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
+  #content h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
+  #content h3{font-size:1.25em}
+  #content h4{font-size:1em}
+  #content p,#content ul,#content ol,#content blockquote,#content pre,#content table{
+    margin:0 0 16px}
+  #content ul,#content ol{padding-left:2em}
+  #content li+li{margin-top:.25em}
+  #content li>p{margin-top:16px}
+  #content blockquote{padding:0 1em;color:var(--muted);
+    border-left:.25em solid var(--border)}
+  #content a{color:var(--accent);text-decoration:none}
+  #content a:hover{text-decoration:underline}
+  #content hr{height:.25em;padding:0;margin:24px 0;background:var(--border);border:0}
+  #content code{background:var(--code-bg);padding:.2em .4em;border-radius:6px;
+    font-size:85%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  #content pre{background:var(--code-bg);padding:16px;border-radius:6px;
+    overflow:auto;font-size:85%;line-height:1.45}
+  #content pre code{background:transparent;padding:0;font-size:100%}
+  #content table{border-collapse:collapse;display:block;overflow:auto;width:max-content;
+    max-width:100%}
+  #content th,#content td{border:1px solid var(--border);padding:6px 13px}
+  #content tr:nth-child(2n){background:var(--sidebar)}
+  #content img{max-width:100%;border-radius:6px}
+  #content input[type=checkbox]{margin-right:.4em}
+  #content .task-list-item{list-style:none;margin-left:-1.5em}
+
+  /* toolbar */
+  #toolbar{position:sticky;top:0;z-index:5;background:var(--bg);
+    border-bottom:1px solid var(--border);padding:8px 16px;display:flex;
+    align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+  #toolbar .path{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <header>
+      <h1>Markdown Viewer</h1>
+      <div class="btn-row">
+        <button class="btn primary" id="openBtn">Open files…</button>
+        <button class="btn" id="clearBtn" title="Close all">Clear</button>
+      </div>
+    </header>
+    <div id="files"></div>
+    <input type="file" id="fileInput" accept=".md,.markdown,.mdx,.txt,text/markdown" multiple hidden>
+  </aside>
+  <main id="main">
+    <div id="dropzone">Drop .md files here</div>
+    <div id="toolbar" class="hidden">
+      <span class="path" id="curPath"></span>
+      <span id="curSize"></span>
+    </div>
+    <div id="content" class="welcome">
+      <h2>Open some markdown files</h2>
+      <p>Click <strong>Open files…</strong>, drag &amp; drop <code>.md</code> files
+      anywhere on this panel, or paste markdown text with <kbd>⌘V</kbd>.</p>
+      <p>Files stay in the sidebar so you can switch between them. Nothing is
+      uploaded anywhere — rendering happens locally in your browser.</p>
+    </div>
+  </main>
+</div>
+<script>
+(() => {
+  const files = [];      // {id, name, path, size, text, html}
+  let activeId = null;
+  let nextId = 1;
+
+  const $files   = document.getElementById('files');
+  const $content = document.getElementById('content');
+  const $toolbar = document.getElementById('toolbar');
+  const $curPath = document.getElementById('curPath');
+  const $curSize = document.getElementById('curSize');
+  const $drop    = document.getElementById('dropzone');
+  const $input   = document.getElementById('fileInput');
+
+  marked.setOptions({
+    gfm: true,
+    breaks: false,
+    highlight(code, lang){
+      if (lang && hljs.getLanguage(lang)) {
+        try { return hljs.highlight(code, {language: lang}).value; } catch(_) {}
+      }
+      try { return hljs.highlightAuto(code).value; } catch(_) { return code; }
+    },
+  });
+
+  function fmtBytes(n){
+    if (n < 1024) return n + ' B';
+    if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+    return (n/1024/1024).toFixed(2) + ' MB';
+  }
+
+  function render(text){
+    const raw = marked.parse(text);
+    return DOMPurify.sanitize(raw, {ADD_ATTR: ['target']});
+  }
+
+  function renderSidebar(){
+    if (files.length === 0){
+      $files.innerHTML = '<div class="empty">No files open</div>';
+      return;
+    }
+    $files.innerHTML = '';
+    for (const f of files){
+      const el = document.createElement('div');
+      el.className = 'file-item' + (f.id === activeId ? ' active' : '');
+      el.innerHTML = `<span class="name" title="${f.path || f.name}">${f.name}</span>
+                      <button class="close" aria-label="Close">×</button>`;
+      el.addEventListener('click', e => {
+        if (e.target.classList.contains('close')) return;
+        activate(f.id);
+      });
+      el.querySelector('.close').addEventListener('click', e => {
+        e.stopPropagation();
+        closeFile(f.id);
+      });
+      $files.appendChild(el);
+    }
+  }
+
+  function activate(id){
+    activeId = id;
+    const f = files.find(x => x.id === id);
+    if (!f){
+      $toolbar.classList.add('hidden');
+      $content.classList.add('welcome');
+      $content.innerHTML = `<h2>Open some markdown files</h2>
+        <p>Click <strong>Open files…</strong>, drag &amp; drop <code>.md</code>
+        files anywhere on this panel, or paste markdown text with
+        <kbd>⌘V</kbd>.</p>`;
+    } else {
+      if (!f.html) f.html = render(f.text);
+      $content.classList.remove('welcome');
+      $content.innerHTML = f.html;
+      $toolbar.classList.remove('hidden');
+      $curPath.textContent = f.path || f.name;
+      $curSize.textContent = fmtBytes(f.size);
+      // make external links open in new tab
+      $content.querySelectorAll('a[href^="http"]').forEach(a => {
+        a.target = '_blank'; a.rel = 'noopener noreferrer';
+      });
+      document.title = f.name + ' — MD Viewer';
+      window.scrollTo(0,0);
+      document.getElementById('main').scrollTo(0,0);
+    }
+    renderSidebar();
+  }
+
+  function closeFile(id){
+    const i = files.findIndex(f => f.id === id);
+    if (i < 0) return;
+    files.splice(i, 1);
+    if (activeId === id) activeId = files[i] ? files[i].id : (files[i-1]?.id || null);
+    activate(activeId);
+  }
+
+  async function addFiles(fileList){
+    const adds = [];
+    for (const file of fileList){
+      if (!/\.(md|markdown|mdx|txt)$/i.test(file.name) && !file.type.includes('markdown')){
+        // still accept if plain text
+        if (file.size > 10*1024*1024) continue;
+      }
+      try {
+        const text = await file.text();
+        const f = {
+          id: nextId++,
+          name: file.name,
+          path: file.webkitRelativePath || file.name,
+          size: file.size,
+          text,
+          html: null,
+        };
+        files.push(f);
+        adds.push(f);
+      } catch(e){ console.error('read failed', file.name, e); }
+    }
+    if (adds.length && !activeId) activate(adds[0].id);
+    else renderSidebar();
+  }
+
+  // file picker
+  document.getElementById('openBtn').addEventListener('click', () => $input.click());
+  $input.addEventListener('change', e => {
+    addFiles(e.target.files);
+    $input.value = '';
+  });
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    files.length = 0; activeId = null; activate(null);
+  });
+
+  // drag-drop
+  let dragDepth = 0;
+  window.addEventListener('dragenter', e => {
+    if (!e.dataTransfer?.types.includes('Files')) return;
+    dragDepth++; $drop.classList.add('active');
+  });
+  window.addEventListener('dragleave', e => {
+    dragDepth = Math.max(0, dragDepth-1);
+    if (dragDepth === 0) $drop.classList.remove('active');
+  });
+  window.addEventListener('dragover', e => { e.preventDefault(); });
+  window.addEventListener('drop', e => {
+    e.preventDefault(); dragDepth = 0; $drop.classList.remove('active');
+    if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files);
+  });
+
+  // paste markdown
+  window.addEventListener('paste', e => {
+    const t = e.clipboardData?.getData('text/plain');
+    if (!t || t.length < 2) return;
+    const f = {
+      id: nextId++,
+      name: 'Pasted ' + new Date().toLocaleTimeString() + '.md',
+      path: '(clipboard)', size: t.length, text: t, html: null,
+    };
+    files.push(f);
+    activate(f.id);
+  });
+
+  // keyboard: ctrl/cmd+O opens picker; ctrl/cmd+W closes active
+  window.addEventListener('keydown', e => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (mod && e.key.toLowerCase() === 'o'){ e.preventDefault(); $input.click(); }
+    if (mod && e.key.toLowerCase() === 'w' && activeId){ e.preventDefault(); closeFile(activeId); }
+  });
+
+  renderSidebar();
+})();
+</script>
+</body>
+</html>
