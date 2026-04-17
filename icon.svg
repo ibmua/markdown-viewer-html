@@ -1,10 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
   <rect width="128" height="128" rx="24" fill="#0969da"/>
   <g fill="#fff" fill-rule="evenodd">
-    <!-- M : x 22..64 , y 40..88 , stroke-thickness 10 -->
-    <path d="M22 40 H64 V88 H54 V56 L43 72 L32 56 V88 H22 Z"/>
-    <!-- D : straight left x 70..88 , arc rightmost x = 88+18 = 106 , y 40..88 .
-             Hole cut via fill-rule=evenodd. -->
-    <path d="M70 40 H88 A24 24 0 0 1 88 88 H70 Z M78 50 V78 A14 14 0 0 1 78 50 Z"/>
+    <!-- M : legs x 14..24 and 50..60 , diagonals meet at (37,55)/(37,70) , y 28..100 -->
+    <path d="M14 100 V28 H24 L37 55 L50 28 H60 V100 H50 V50 L37 70 L24 50 V100 Z"/>
+    <!-- D : straight left x 68..78 , arc radius 36 → rightmost x 114 , y 28..100 .
+             Inner hole: straight starts at x 78 , arc radius 26 → rightmost x 104 .
+             Even 10-px stroke on all sides. -->
+    <path d="M68 28 H78 A36 36 0 0 1 78 100 H68 Z M78 38 V90 A26 26 0 0 0 78 38 Z"/>
   </g>
 </svg>

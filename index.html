@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>MD Viewer</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20128%20128%22%3E%20%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2224%22%20fill%3D%22%230969da%22/%3E%20%3Cg%20fill%3D%22%23fff%22%20fill-rule%3D%22evenodd%22%3E%20%3C%21--%20M%20%3A%20x%2022..64%20%2C%20y%2040..88%20%2C%20stroke-thickness%2010%20--%3E%20%3Cpath%20d%3D%22M22%2040%20H64%20V88%20H54%20V56%20L43%2072%20L32%2056%20V88%20H22%20Z%22/%3E%20%3C%21--%20D%20%3A%20straight%20left%20x%2070..88%20%2C%20arc%20rightmost%20x%20%3D%2088%2B18%20%3D%20106%20%2C%20y%2040..88%20.%20Hole%20cut%20via%20fill-rule%3Devenodd.%20--%3E%20%3Cpath%20d%3D%22M70%2040%20H88%20A24%2024%200%200%201%2088%2088%20H70%20Z%20M78%2050%20V78%20A14%2014%200%200%201%2078%2050%20Z%22/%3E%20%3C/g%3E%20%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%3E%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2224%22%20fill%3D%22%230969da%22%2F%3E%3Cg%20fill%3D%22%23fff%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20d%3D%22M14%20100V28H24L37%2055L50%2028H60V100H50V50L37%2070L24%2050V100Z%22%2F%3E%3Cpath%20d%3D%22M68%2028H78A36%2036%200%200%201%2078%20100H68ZM78%2038V90A26%2026%200%200%200%2078%2038Z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script>
 /* marked.js 12 — MIT — github.com/markedjs/marked */
@@ -1589,7 +1589,15 @@ return He}()
     try {
       const handles = await window.showOpenFilePicker({
         multiple: true,
-        types: [{ description: 'Markdown', accept: {'text/markdown': ['.md','.markdown','.mdx','.txt']} }],
+        excludeAcceptAllOption: false,
+        types: [{
+          description: 'Markdown / text',
+          accept: {
+            'text/markdown': ['.md','.markdown','.mdx'],
+            'text/plain': ['.md','.markdown','.mdx','.txt','.text'],
+            'text/*': ['.md','.markdown','.mdx','.txt','.text'],
+          },
+        }],
       });
       const added = [];
       for (const h of handles){
