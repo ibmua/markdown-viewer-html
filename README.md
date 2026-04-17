@@ -6,6 +6,8 @@ dark mode, syntax highlighting, and tables.
 
 No build step, no server, no upload: everything runs locally in the browser.
 
+![Screenshot](screenshot.png)
+
 ## Features
 
 - **Drag & drop** one or many `.md` files anywhere on the page
