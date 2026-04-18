@@ -1296,18 +1296,21 @@ return He}()
     user-select:none}
   .file-item:hover{background:var(--hover)}
   .file-item.active{background:var(--active);color:var(--accent);font-weight:600}
+  .file-item:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
   .file-item .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .file-item .dot{width:8px;height:8px;border-radius:50%;background:var(--warn-border);
     visibility:hidden;flex-shrink:0}
   .file-item.dirty .dot{visibility:visible}
   .file-item .close{opacity:0;border:none;background:transparent;color:inherit;
     cursor:pointer;padding:0 4px;font-size:16px;line-height:1}
-  .file-item:hover .close,.file-item.active .close{opacity:.7}
-  .file-item .close:hover{opacity:1}
+  .file-item:hover .close,.file-item.active .close,
+  .file-item:focus-within .close{opacity:.7}
+  .file-item .close:hover,.file-item .close:focus-visible{opacity:1}
+  .file-item .close:focus-visible{outline:1px solid var(--accent);outline-offset:1px}
   .empty{padding:20px;color:var(--muted);font-size:13px;text-align:center}
 
   #main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
-  #dropzone{position:absolute;inset:0;display:none;align-items:center;
+  #dropzone{position:fixed;inset:0;display:none;align-items:center;
     justify-content:center;background:rgba(9,105,218,.08);
     border:3px dashed var(--accent);pointer-events:none;z-index:10;
     color:var(--accent);font-size:20px;font-weight:600}
@@ -1382,37 +1385,31 @@ return He}()
         <button class="btn" id="clearBtn" title="Close all">Clear</button>
       </div>
     </header>
-    <div id="files"></div>
-    <input type="file" id="fileInput" accept=".md,.markdown,.mdx,.txt,text/markdown" multiple hidden>
+    <div id="files" role="list"></div>
+    <input type="file" id="fileInput" accept=".md,.markdown,.mdx,.txt,.text,text/markdown,text/plain" multiple hidden>
   </aside>
   <main id="main">
-    <div id="dropzone">Drop .md files here</div>
     <div id="toolbar" class="hidden">
-      <div class="seg" id="modeSeg">
-        <button class="btn small on" data-mode="view">Preview</button>
-        <button class="btn small" data-mode="split">Split</button>
-        <button class="btn small" data-mode="edit">Edit</button>
+      <div class="seg" id="modeSeg" role="group" aria-label="View mode">
+        <button class="btn small on" data-mode="view" aria-pressed="true">Preview</button>
+        <button class="btn small" data-mode="split" aria-pressed="false">Split</button>
+        <button class="btn small" data-mode="edit" aria-pressed="false">Edit</button>
       </div>
       <span class="path" id="curPath"></span>
       <span class="size" id="curSize"></span>
       <button class="btn small" id="saveBtn" title="Save back to the original file (if browser supports it)">Save</button>
       <button class="btn small primary" id="downloadBtn" title="Download a copy">Download</button>
     </div>
-    <div id="warnBar">
+    <div id="warnBar" role="alert" aria-live="polite">
       <strong>Unsaved changes.</strong>
       <span id="warnMsg">Edits live in this tab only — click <em>Download</em> to keep them.</span>
     </div>
     <div id="body">
       <textarea id="editor" spellcheck="false" placeholder="# Start typing markdown…"></textarea>
-      <div id="content" class="welcome">
-        <h2>Open some markdown files</h2>
-        <p>Click <strong>Open files…</strong>, drag &amp; drop <code>.md</code> files
-        anywhere on this panel, or paste markdown text with <kbd>⌘V</kbd>.</p>
-        <p>Files stay in the sidebar so you can switch between them. Nothing is
-        uploaded anywhere — rendering happens locally in your browser.</p>
-      </div>
+      <div id="content" class="welcome"></div>
     </div>
   </main>
+  <div id="dropzone">Drop markdown/text files here</div>
 </div>
 <script>
 (() => {
@@ -1436,8 +1433,12 @@ return He}()
   const $modeSeg  = document.getElementById('modeSeg');
   const $saveBtn  = document.getElementById('saveBtn');
   const $dlBtn    = document.getElementById('downloadBtn');
+  const $clearBtn = document.getElementById('clearBtn');
 
   const hasFSA = 'showOpenFilePicker' in window;
+  const isMac = /Mac|iP(hone|ad|od)/i.test(navigator.platform || navigator.userAgent || '');
+  const modKey = isMac ? '⌘' : 'Ctrl';
+  const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
   marked.setOptions({
     gfm: true,
@@ -1451,7 +1452,22 @@ return He}()
   );
 
   const fmtBytes = n => n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(2)+' MB';
-  const render = text => DOMPurify.sanitize(marked.parse(text), {ADD_ATTR:['target']});
+  const escHtml = s => String(s).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+  const render = text => {
+    try {
+      return DOMPurify.sanitize(marked.parse(text), {ADD_ATTR:['target']});
+    } catch(e){
+      console.error('render failed', e);
+      return `<div style="color:var(--warn-fg);background:var(--warn-bg);padding:12px;border-radius:6px">Rendering failed: ${escHtml(e && e.message || String(e))}</div>`;
+    }
+  };
+  const welcomeHTML = `<h2>Open some markdown files</h2>
+    <p>Click <strong>Open files…</strong>, drag &amp; drop markdown/text files
+    anywhere, or paste with <kbd>${modKey}V</kbd>.</p>
+    <p>Files stay in the sidebar so you can switch between them. Nothing is
+    uploaded anywhere — rendering happens locally in your browser.</p>`;
   const cur = () => files.find(f => f.id === activeId) || null;
 
   function renderSidebar(){
@@ -1462,6 +1478,9 @@ return He}()
       el.className = 'file-item'
         + (f.id === activeId ? ' active' : '')
         + (f.dirty ? ' dirty' : '');
+      el.setAttribute('role', 'listitem');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', `${f.name}${f.dirty ? ' (unsaved)' : ''}`);
       const dot = document.createElement('span');
       dot.className = 'dot';
       dot.title = 'Unsaved changes';
@@ -1471,12 +1490,19 @@ return He}()
       name.textContent = f.name;
       const closeBtn = document.createElement('button');
       closeBtn.className = 'close';
-      closeBtn.setAttribute('aria-label', 'Close');
+      closeBtn.setAttribute('aria-label', `Close ${f.name}`);
       closeBtn.textContent = '×';
       el.append(dot, name, closeBtn);
       el.addEventListener('click', e => {
         if (e.target === closeBtn) return;
         activate(f.id);
+      });
+      el.addEventListener('keydown', e => {
+        if (e.target === closeBtn) return;
+        if (e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          activate(f.id);
+        }
       });
       closeBtn.addEventListener('click', e => {
         e.stopPropagation(); closeFile(f.id);
@@ -1487,8 +1513,7 @@ return He}()
 
   function renderPreview(){
     const f = cur(); if (!f) return;
-    f.html = render(f.text);
-    $content.innerHTML = f.html;
+    $content.innerHTML = render(f.text);
     $content.querySelectorAll('pre > code').forEach(el => {
       try { hljs.highlightElement(el); } catch(_) {}
     });
@@ -1502,6 +1527,7 @@ return He}()
   }
 
   function updateToolbar(){
+    $clearBtn.disabled = files.length === 0;
     const f = cur();
     if (!f){
       $toolbar.classList.add('hidden');
@@ -1511,6 +1537,7 @@ return He}()
     }
     $toolbar.classList.remove('hidden');
     $curPath.textContent = f.name;
+    $curPath.title = f.name;
     $curSize.textContent = fmtBytes(f.size);
     $warnBar.classList.toggle('show', !!f.dirty);
     $warnMsg.textContent = f.handle
@@ -1528,8 +1555,11 @@ return He}()
     mode = m;
     $body.classList.toggle('edit',  m === 'edit');
     $body.classList.toggle('split', m === 'split');
-    $modeSeg.querySelectorAll('.btn').forEach(b =>
-      b.classList.toggle('on', b.dataset.mode === m));
+    $modeSeg.querySelectorAll('.btn').forEach(b => {
+      const on = b.dataset.mode === m;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
     if (m === 'edit' || m === 'split'){
       const f = cur();
       if (f && $editor.value !== f.text) $editor.value = f.text;
@@ -1543,8 +1573,7 @@ return He}()
     const f = cur();
     if (!f){
       $content.classList.add('welcome');
-      $content.innerHTML = `<h2>Open some markdown files</h2>
-        <p>Click <strong>Open files…</strong> or drag <code>.md</code> files anywhere.</p>`;
+      $content.innerHTML = welcomeHTML;
       $editor.value = '';
       setMode('view'); updateToolbar(); renderSidebar();
       return;
@@ -1554,7 +1583,7 @@ return He}()
     renderPreview();
     updateToolbar();
     renderSidebar();
-    document.getElementById('body').scrollTo(0,0);
+    $body.scrollTo(0, 0);
   }
 
   function closeFile(id){
@@ -1575,13 +1604,12 @@ return He}()
     if (!f.dirty){ f.dirty = true; updateToolbar(); renderSidebar(); }
   }
 
-  async function addFile(opts){
+  function addFile(opts){
     const f = {
       id: nextId++,
       name: opts.name,
       size: opts.size ?? new Blob([opts.text]).size,
       text: opts.text,
-      html: null,
       dirty: false,
       handle: opts.handle || null,
     };
@@ -1590,21 +1618,26 @@ return He}()
   }
 
   async function addFromFileObject(file, handle){
+    if (file.size > MAX_FILE_SIZE){
+      if (!confirm(`"${file.name}" is ${fmtBytes(file.size)}. Large files can freeze the browser. Open anyway?`)) return null;
+    }
     try {
       const text = await file.text();
-      return await addFile({ name: file.name, text, size: file.size, handle });
+      return addFile({ name: file.name, text, size: file.size, handle });
     } catch(e){ console.error('read failed', file.name, e); return null; }
   }
 
   async function addFileList(fileList){
+    const all = Array.from(fileList);
     const added = [];
-    for (const file of fileList){
+    for (const file of all){
       if (!isAcceptedFile(file)) continue;
       const f = await addFromFileObject(file);
       if (f) added.push(f);
     }
     if (added.length && !activeId) activate(added[0].id);
     else { renderSidebar(); updateToolbar(); }
+    if (all.length && !added.length) alert('No markdown/text files in that selection.');
   }
 
   async function openViaFSA(){
@@ -1621,15 +1654,18 @@ return He}()
         }],
       });
       const added = [];
+      let rejected = 0;
       for (const h of handles){
         try {
           const file = await h.getFile();
+          if (!isAcceptedFile(file)){ rejected++; continue; }
           const f = await addFromFileObject(file, h);
           if (f) added.push(f);
         } catch(e){ console.error(e); }
       }
       if (added.length && !activeId) activate(added[0].id);
       else { renderSidebar(); updateToolbar(); }
+      if (!added.length && rejected) alert('No markdown/text files in that selection.');
     } catch(e){
       if (e.name !== 'AbortError') console.error(e);
     }
@@ -1638,10 +1674,14 @@ return He}()
   document.getElementById('openBtn').addEventListener('click', () => {
     if (hasFSA) openViaFSA(); else $input.click();
   });
-  $input.addEventListener('change', e => { addFileList(e.target.files); $input.value=''; });
+  $input.addEventListener('change', e => {
+    const list = Array.from(e.target.files);
+    $input.value = '';
+    addFileList(list);
+  });
 
-  document.getElementById('newBtn').addEventListener('click', async () => {
-    const f = await addFile({ name: 'Untitled.md', text: '# New document\n\n' });
+  document.getElementById('newBtn').addEventListener('click', () => {
+    const f = addFile({ name: 'Untitled.md', text: '# New document\n\n' });
     f.dirty = true;
     activate(f.id);
     setMode('edit');
@@ -1754,9 +1794,9 @@ return He}()
     const d = new Date();
     const pad = n => String(n).padStart(2, '0');
     const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
-    const f = await addFile({
+    const f = addFile({
       name: `Pasted ${stamp}.md`,
-      text: t, size: t.length,
+      text: t,
     });
     f.dirty = true;
     activate(f.id);
@@ -1858,7 +1898,7 @@ return He}()
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = f.name.match(/\.(md|markdown|mdx|txt)$/i) ? f.name : (f.name + '.md');
+    a.download = ACCEPTED_EXT.test(f.name) ? f.name : (f.name + '.md');
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
@@ -1881,6 +1921,7 @@ return He}()
     if (files.some(f => f.dirty)){ e.preventDefault(); e.returnValue = ''; }
   });
 
+  $content.innerHTML = welcomeHTML;
   renderSidebar(); updateToolbar();
 })();
 </script>
