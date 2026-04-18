@@ -1442,13 +1442,13 @@ return He}()
   marked.setOptions({
     gfm: true,
     breaks: false,
-    highlight(code, lang){
-      if (lang && hljs.getLanguage(lang)) {
-        try { return hljs.highlight(code, {language: lang}).value; } catch(_) {}
-      }
-      try { return hljs.highlightAuto(code).value; } catch(_) { return code; }
-    },
   });
+
+  const ACCEPTED_EXT = /\.(md|markdown|mdx|txt|text)$/i;
+  const isAcceptedFile = file => !!file && (
+    ACCEPTED_EXT.test(file.name || '') ||
+    (file.type || '').toLowerCase().startsWith('text/')
+  );
 
   const fmtBytes = n => n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(2)+' MB';
   const render = text => DOMPurify.sanitize(marked.parse(text), {ADD_ATTR:['target']});
@@ -1462,14 +1462,23 @@ return He}()
       el.className = 'file-item'
         + (f.id === activeId ? ' active' : '')
         + (f.dirty ? ' dirty' : '');
-      el.innerHTML = `<span class="dot" title="Unsaved changes"></span>
-                      <span class="name" title="${f.name}">${f.name}</span>
-                      <button class="close" aria-label="Close">×</button>`;
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.title = 'Unsaved changes';
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.title = f.name;
+      name.textContent = f.name;
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'close';
+      closeBtn.setAttribute('aria-label', 'Close');
+      closeBtn.textContent = '×';
+      el.append(dot, name, closeBtn);
       el.addEventListener('click', e => {
-        if (e.target.classList.contains('close')) return;
+        if (e.target === closeBtn) return;
         activate(f.id);
       });
-      el.querySelector('.close').addEventListener('click', e => {
+      closeBtn.addEventListener('click', e => {
         e.stopPropagation(); closeFile(f.id);
       });
       $files.appendChild(el);
@@ -1480,8 +1489,15 @@ return He}()
     const f = cur(); if (!f) return;
     f.html = render(f.text);
     $content.innerHTML = f.html;
-    $content.querySelectorAll('a[href^="http"]').forEach(a => {
-      a.target = '_blank'; a.rel = 'noopener noreferrer';
+    $content.querySelectorAll('pre > code').forEach(el => {
+      try { hljs.highlightElement(el); } catch(_) {}
+    });
+    $content.querySelectorAll('a[href]').forEach(a => {
+      const h = a.getAttribute('href') || '';
+      if (/^(https?:|\/\/)/i.test(h)){
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
     });
   }
 
@@ -1544,10 +1560,15 @@ return He}()
   function closeFile(id){
     const i = files.findIndex(f => f.id === id);
     if (i < 0) return;
-    if (files[i].dirty && !confirm(`"${files[i].name}" has unsaved changes. Close without downloading?`)) return;
+    if (files[i].dirty && !confirm(`"${files[i].name}" has unsaved changes. Close without saving?`)) return;
+    const wasActive = activeId === id;
     files.splice(i, 1);
-    if (activeId === id) activeId = files[i]?.id || files[i-1]?.id || null;
-    activate(activeId);
+    if (wasActive){
+      activeId = files[i]?.id || files[i-1]?.id || null;
+      activate(activeId);
+    } else {
+      renderSidebar(); updateToolbar();
+    }
   }
 
   function markDirty(f){
@@ -1578,6 +1599,7 @@ return He}()
   async function addFileList(fileList){
     const added = [];
     for (const file of fileList){
+      if (!isAcceptedFile(file)) continue;
       const f = await addFromFileObject(file);
       if (f) added.push(f);
     }
@@ -1594,8 +1616,7 @@ return He}()
           description: 'Markdown / text',
           accept: {
             'text/markdown': ['.md','.markdown','.mdx'],
-            'text/plain': ['.md','.markdown','.mdx','.txt','.text'],
-            'text/*': ['.md','.markdown','.mdx','.txt','.text'],
+            'text/plain': ['.txt','.text'],
           },
         }],
       });
@@ -1620,7 +1641,7 @@ return He}()
   $input.addEventListener('change', e => { addFileList(e.target.files); $input.value=''; });
 
   document.getElementById('newBtn').addEventListener('click', async () => {
-    const f = await addFile({ name: 'Untitled.md', text: '# New document\n\n', size: 0 });
+    const f = await addFile({ name: 'Untitled.md', text: '# New document\n\n' });
     f.dirty = true;
     activate(f.id);
     setMode('edit');
@@ -1632,18 +1653,38 @@ return He}()
     files.length = 0; activeId = null; activate(null);
   });
 
-  let dragDepth = 0;
+  const isFilesDrag = e => {
+    const types = e.dataTransfer?.types;
+    if (!types) return false;
+    if (typeof types.includes === 'function') return types.includes('Files');
+    for (let i = 0; i < types.length; i++) if (types[i] === 'Files') return true;
+    return false;
+  };
+  let dragHideTimer = null;
+  const showDropzone = () => {
+    clearTimeout(dragHideTimer); dragHideTimer = null;
+    $drop.classList.add('active');
+  };
+  const hideDropzone = () => {
+    clearTimeout(dragHideTimer); dragHideTimer = null;
+    $drop.classList.remove('active');
+  };
   window.addEventListener('dragenter', e => {
-    if (!e.dataTransfer?.types.includes('Files')) return;
-    dragDepth++; $drop.classList.add('active');
+    if (!isFilesDrag(e)) return;
+    showDropzone();
   });
-  window.addEventListener('dragleave', () => {
-    dragDepth = Math.max(0, dragDepth-1);
-    if (dragDepth === 0) $drop.classList.remove('active');
+  window.addEventListener('dragover', e => {
+    if (!isFilesDrag(e)) return;
+    e.preventDefault();
+    showDropzone();
   });
-  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('dragleave', e => {
+    if (e.relatedTarget) return;
+    clearTimeout(dragHideTimer);
+    dragHideTimer = setTimeout(hideDropzone, 80);
+  });
   window.addEventListener('drop', async e => {
-    e.preventDefault(); dragDepth = 0; $drop.classList.remove('active');
+    e.preventDefault(); hideDropzone();
     const entries = [];
     const items = e.dataTransfer?.items;
     if (items && items.length){
@@ -1662,7 +1703,9 @@ return He}()
       for (const file of e.dataTransfer.files) entries.push({ file, handlePromise: null });
     }
     const added = [];
+    let rejected = 0;
     for (const { file, handlePromise } of entries){
+      if (!isAcceptedFile(file)){ rejected++; continue; }
       let handle = null;
       if (handlePromise){
         try { const h = await handlePromise; if (h && h.kind === 'file') handle = h; } catch(_) {}
@@ -1672,6 +1715,7 @@ return He}()
     }
     if (added.length && !activeId) activate(added[0].id);
     else { renderSidebar(); updateToolbar(); }
+    if (!added.length && rejected) alert('No markdown/text files in that drop.');
   });
 
   window.addEventListener('paste', async e => {
@@ -1689,10 +1733,11 @@ return He}()
     if (!pastedFiles.length && cd?.files?.length){
       for (const file of cd.files) pastedFiles.push(file);
     }
-    if (pastedFiles.length){
+    const acceptedFiles = pastedFiles.filter(isAcceptedFile);
+    if (acceptedFiles.length){
       e.preventDefault();
       const added = [];
-      for (const file of pastedFiles){
+      for (const file of acceptedFiles){
         const f = await addFromFileObject(file);
         if (f) added.push(f);
       }
@@ -1700,10 +1745,17 @@ return He}()
       else { renderSidebar(); updateToolbar(); }
       return;
     }
+    if (pastedFiles.length){
+      e.preventDefault();
+      return;
+    }
     const t = cd?.getData('text/plain');
     if (!t || t.length < 2) return;
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
     const f = await addFile({
-      name: 'Pasted ' + new Date().toLocaleTimeString() + '.md',
+      name: `Pasted ${stamp}.md`,
       text: t, size: t.length,
     });
     f.dirty = true;
@@ -1729,13 +1781,38 @@ return He}()
 
   $editor.addEventListener('keydown', e => {
     const mod = e.metaKey || e.ctrlKey;
-    if (mod && e.key.toLowerCase() === 's'){ e.preventDefault(); doSave(); return; }
-    if (e.key === 'Tab' && !e.shiftKey){
-      e.preventDefault();
-      const s = $editor.selectionStart, t = $editor.selectionEnd;
-      $editor.setRangeText('  ', s, t, 'end');
-      $editor.dispatchEvent(new Event('input'));
+    if (mod && e.key.toLowerCase() === 's'){
+      e.preventDefault(); e.stopPropagation();
+      doSave();
+      return;
     }
+    if (e.key !== 'Tab') return;
+    e.preventDefault();
+    const s = $editor.selectionStart, t = $editor.selectionEnd;
+    const v = $editor.value;
+    const spansLines = v.slice(s, t).includes('\n');
+    if (spansLines){
+      const lineStart = v.lastIndexOf('\n', s - 1) + 1;
+      const block = v.slice(lineStart, t);
+      const replaced = e.shiftKey
+        ? block.replace(/^ {1,2}/gm, '')
+        : block.replace(/^/gm, '  ');
+      $editor.setRangeText(replaced, lineStart, t);
+      $editor.selectionStart = lineStart;
+      $editor.selectionEnd = lineStart + replaced.length;
+    } else if (e.shiftKey){
+      const lineStart = v.lastIndexOf('\n', s - 1) + 1;
+      const head = v.slice(lineStart, lineStart + 2);
+      const strip = head.startsWith('  ') ? 2 : (head.startsWith(' ') ? 1 : 0);
+      if (strip){
+        $editor.setRangeText('', lineStart, lineStart + strip);
+        $editor.selectionStart = Math.max(lineStart, s - strip);
+        $editor.selectionEnd = Math.max(lineStart, t - strip);
+      }
+    } else {
+      $editor.setRangeText('  ', s, t, 'end');
+    }
+    $editor.dispatchEvent(new Event('input'));
   });
 
   async function doSave(){
