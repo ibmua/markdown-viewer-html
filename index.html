@@ -1644,23 +1644,31 @@ return He}()
   window.addEventListener('dragover', e => e.preventDefault());
   window.addEventListener('drop', async e => {
     e.preventDefault(); dragDepth = 0; $drop.classList.remove('active');
+    const entries = [];
     const items = e.dataTransfer?.items;
-    const added = [];
-    if (items && items.length && items[0].getAsFileSystemHandle){
+    if (items && items.length){
       for (const it of items){
         if (it.kind !== 'file') continue;
-        let handle = null;
-        try { handle = await it.getAsFileSystemHandle(); } catch(_) {}
         const file = it.getAsFile();
         if (!file) continue;
-        const f = await addFromFileObject(file, handle && handle.kind === 'file' ? handle : null);
-        if (f) added.push(f);
+        let handlePromise = null;
+        if (typeof it.getAsFileSystemHandle === 'function'){
+          try { handlePromise = it.getAsFileSystemHandle(); } catch(_) {}
+        }
+        entries.push({ file, handlePromise });
       }
-    } else if (e.dataTransfer?.files?.length){
-      for (const file of e.dataTransfer.files){
-        const f = await addFromFileObject(file);
-        if (f) added.push(f);
+    }
+    if (!entries.length && e.dataTransfer?.files?.length){
+      for (const file of e.dataTransfer.files) entries.push({ file, handlePromise: null });
+    }
+    const added = [];
+    for (const { file, handlePromise } of entries){
+      let handle = null;
+      if (handlePromise){
+        try { const h = await handlePromise; if (h && h.kind === 'file') handle = h; } catch(_) {}
       }
+      const f = await addFromFileObject(file, handle);
+      if (f) added.push(f);
     }
     if (added.length && !activeId) activate(added[0].id);
     else { renderSidebar(); updateToolbar(); }
@@ -1668,7 +1676,31 @@ return He}()
 
   window.addEventListener('paste', async e => {
     if (document.activeElement === $editor) return;
-    const t = e.clipboardData?.getData('text/plain');
+    const cd = e.clipboardData;
+    const pastedFiles = [];
+    if (cd?.items){
+      for (const it of cd.items){
+        if (it.kind === 'file'){
+          const file = it.getAsFile();
+          if (file) pastedFiles.push(file);
+        }
+      }
+    }
+    if (!pastedFiles.length && cd?.files?.length){
+      for (const file of cd.files) pastedFiles.push(file);
+    }
+    if (pastedFiles.length){
+      e.preventDefault();
+      const added = [];
+      for (const file of pastedFiles){
+        const f = await addFromFileObject(file);
+        if (f) added.push(f);
+      }
+      if (added.length && !activeId) activate(added[0].id);
+      else { renderSidebar(); updateToolbar(); }
+      return;
+    }
+    const t = cd?.getData('text/plain');
     if (!t || t.length < 2) return;
     const f = await addFile({
       name: 'Pasted ' + new Date().toLocaleTimeString() + '.md',
