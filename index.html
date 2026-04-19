@@ -1263,6 +1263,22 @@ return He}()
       --sidebar:#161b22; --accent:#2f81f7; --hover:#21262d; --active:#1f3556;
       --code-bg:#161b22; --warn-bg:#3a2d06; --warn-border:#9e6a03; --warn-fg:#f2cc60;
     }
+    /* highlight.js GitHub Dark overrides */
+    .hljs{color:#c9d1d9;background:transparent}
+    .hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+    .hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+    .hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+    .hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+    .hljs-built_in,.hljs-symbol{color:#ffa657}
+    .hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+    .hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+    .hljs-subst{color:#c9d1d9}
+    .hljs-section{color:#1f6feb;font-weight:700}
+    .hljs-bullet{color:#f2cc60}
+    .hljs-emphasis{color:#c9d1d9;font-style:italic}
+    .hljs-strong{color:#c9d1d9;font-weight:700}
+    .hljs-addition{color:#aff5b4;background-color:#033a16}
+    .hljs-deletion{color:#ffdcd7;background-color:#67060c}
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);
@@ -1386,7 +1402,7 @@ return He}()
       </div>
     </header>
     <div id="files" role="list"></div>
-    <input type="file" id="fileInput" accept=".md,.markdown,.mdx,.txt,.text,text/markdown,text/plain" multiple hidden>
+    <input type="file" id="fileInput" multiple hidden>
   </aside>
   <main id="main">
     <div id="toolbar" class="hidden">
@@ -1409,7 +1425,7 @@ return He}()
       <div id="content" class="welcome"></div>
     </div>
   </main>
-  <div id="dropzone">Drop markdown/text files here</div>
+  <div id="dropzone">Drop text files here</div>
 </div>
 <script>
 (() => {
@@ -1446,10 +1462,16 @@ return He}()
   });
 
   const ACCEPTED_EXT = /\.(md|markdown|mdx|txt|text)$/i;
-  const isAcceptedFile = file => !!file && (
-    ACCEPTED_EXT.test(file.name || '') ||
-    (file.type || '').toLowerCase().startsWith('text/')
-  );
+  const BINARY_EXT = /\.(png|jpe?g|gif|bmp|webp|ico|tiff?|heic|heif|avif|mp3|wav|ogg|flac|m4a|aac|opus|mp4|mov|avi|mkv|webm|wmv|flv|m4v|3gp|pdf|zip|rar|7z|gz|tgz|tar|bz2|xz|dmg|iso|exe|dll|so|dylib|bin|class|jar|war|pyc|pyo|o|obj|a|lib|doc|docx|xls|xlsx|ppt|pptx|odt|ods|odp|pages|numbers|keynote|ttf|otf|woff2?|eot|psd|ai|sketch|fig|xd|blend|fbx|stl|3ds|dae|glb|gltf|db|sqlite|sqlite3|mdb|accdb|wasm)$/i;
+  const BINARY_MIME = /^(image\/(?!svg)|audio\/|video\/|font\/|model\/|application\/(pdf|zip|x-rar|x-7z|x-tar|gzip|x-bzip|x-xz|x-msdownload|x-executable|x-sharedlib|octet-stream$|vnd\.ms-|vnd\.openxmlformats-|vnd\.oasis\.opendocument|x-apple-|x-sqlite|wasm))/i;
+  const isAcceptedFile = file => {
+    if (!file) return false;
+    const name = file.name || '';
+    const type = (file.type || '').toLowerCase();
+    if (BINARY_EXT.test(name)) return false;
+    if (type && BINARY_MIME.test(type) && type !== 'application/octet-stream') return false;
+    return true;
+  };
 
   const fmtBytes = n => n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(2)+' MB';
   const escHtml = s => String(s).replace(/[&<>"']/g, c => (
@@ -1464,7 +1486,7 @@ return He}()
     }
   };
   const welcomeHTML = `<h2>Open some markdown files</h2>
-    <p>Click <strong>Open files…</strong>, drag &amp; drop markdown/text files
+    <p>Click <strong>Open files…</strong>, drag &amp; drop any text file
     anywhere, or paste with <kbd>${modKey}V</kbd>.</p>
     <p>Files stay in the sidebar so you can switch between them. Nothing is
     uploaded anywhere — rendering happens locally in your browser.</p>`;
@@ -1635,9 +1657,9 @@ return He}()
       const f = await addFromFileObject(file);
       if (f) added.push(f);
     }
-    if (added.length && !activeId) activate(added[0].id);
+    if (added.length) activate(added[0].id);
     else { renderSidebar(); updateToolbar(); }
-    if (all.length && !added.length) alert('No markdown/text files in that selection.');
+    if (all.length && !added.length) alert('That selection looks like binary files only.');
   }
 
   async function openViaFSA(){
@@ -1645,13 +1667,6 @@ return He}()
       const handles = await window.showOpenFilePicker({
         multiple: true,
         excludeAcceptAllOption: false,
-        types: [{
-          description: 'Markdown / text',
-          accept: {
-            'text/markdown': ['.md','.markdown','.mdx'],
-            'text/plain': ['.txt','.text'],
-          },
-        }],
       });
       const added = [];
       let rejected = 0;
@@ -1663,9 +1678,9 @@ return He}()
           if (f) added.push(f);
         } catch(e){ console.error(e); }
       }
-      if (added.length && !activeId) activate(added[0].id);
+      if (added.length) activate(added[0].id);
       else { renderSidebar(); updateToolbar(); }
-      if (!added.length && rejected) alert('No markdown/text files in that selection.');
+      if (!added.length && rejected) alert('That selection looks like binary files only.');
     } catch(e){
       if (e.name !== 'AbortError') console.error(e);
     }
@@ -1753,9 +1768,9 @@ return He}()
       const f = await addFromFileObject(file, handle);
       if (f) added.push(f);
     }
-    if (added.length && !activeId) activate(added[0].id);
+    if (added.length) activate(added[0].id);
     else { renderSidebar(); updateToolbar(); }
-    if (!added.length && rejected) alert('No markdown/text files in that drop.');
+    if (!added.length && rejected) alert('That drop looks like binary files only.');
   });
 
   window.addEventListener('paste', async e => {
@@ -1781,7 +1796,7 @@ return He}()
         const f = await addFromFileObject(file);
         if (f) added.push(f);
       }
-      if (added.length && !activeId) activate(added[0].id);
+      if (added.length) activate(added[0].id);
       else { renderSidebar(); updateToolbar(); }
       return;
     }
@@ -1875,10 +1890,7 @@ return He}()
     }
     if (hasFSA && window.showSaveFilePicker){
       try {
-        const h = await window.showSaveFilePicker({
-          suggestedName: f.name,
-          types: [{ description: 'Markdown', accept: {'text/markdown': ['.md']} }],
-        });
+        const h = await window.showSaveFilePicker({ suggestedName: f.name });
         const w = await h.createWritable();
         await w.write(f.text); await w.close();
         f.handle = h; f.name = h.name || f.name;
@@ -1894,11 +1906,12 @@ return He}()
   }
 
   function triggerDownload(f){
-    const blob = new Blob([f.text], { type: 'text/markdown' });
+    const mime = ACCEPTED_EXT.test(f.name) ? 'text/markdown' : 'text/plain';
+    const blob = new Blob([f.text], { type: mime });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = ACCEPTED_EXT.test(f.name) ? f.name : (f.name + '.md');
+    a.download = /\.[^./\\]+$/.test(f.name) ? f.name : (f.name + '.md');
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
