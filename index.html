@@ -1285,9 +1285,18 @@ return He}()
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
     font-size:15px;line-height:1.55}
   #app{display:flex;height:100%}
-  #sidebar{width:280px;min-width:220px;max-width:480px;flex-shrink:0;
-    background:var(--sidebar);border-right:1px solid var(--border);
-    display:flex;flex-direction:column}
+  #sidebar{width:var(--sidebar-w,280px);flex-shrink:0;
+    background:var(--sidebar);
+    display:flex;flex-direction:column;min-width:0}
+  .resizer{flex-shrink:0;position:relative;z-index:2;
+    background:var(--border);touch-action:none;user-select:none}
+  .resizer.v{width:1px;cursor:col-resize}
+  .resizer.v::before{content:"";position:absolute;top:0;bottom:0;
+    left:-3px;right:-3px}
+  .resizer.v:hover,.resizer.v.dragging{background:var(--accent);width:3px;margin:0 -1px}
+  .resizer:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  #splitResizer{display:none}
+  #body.split #splitResizer{display:block}
   #sidebar header{padding:14px 16px;border-bottom:1px solid var(--border);
     display:flex;flex-direction:column;gap:8px}
   #sidebar h1{font-size:14px;margin:0;font-weight:600;letter-spacing:.02em;
@@ -1350,9 +1359,9 @@ return He}()
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;
     line-height:1.6;outline:none;tab-size:2}
   #body.edit #editor{display:block}
-  #body.split #editor{flex:1;border-right:1px solid var(--border);display:block}
+  #body.split #editor{flex:0 0 var(--split-w,50%);display:block;min-width:0}
   #body.edit #content{display:none}
-  #body.split #content{flex:1;overflow:auto}
+  #body.split #content{flex:1 1 0;overflow:auto;min-width:0}
 
   .welcome{max-width:640px;margin:60px auto;padding:0 32px;color:var(--muted)}
   .welcome h2{color:var(--fg);font-weight:600;margin-top:0}
@@ -1404,6 +1413,9 @@ return He}()
     <div id="files" role="list"></div>
     <input type="file" id="fileInput" multiple hidden>
   </aside>
+  <div id="sideResizer" class="resizer v" role="separator"
+       aria-orientation="vertical" aria-label="Resize sidebar"
+       tabindex="0"></div>
   <main id="main">
     <div id="toolbar" class="hidden">
       <div class="seg" id="modeSeg" role="group" aria-label="View mode">
@@ -1422,6 +1434,9 @@ return He}()
     </div>
     <div id="body">
       <textarea id="editor" spellcheck="false" placeholder="# Start typing markdown…"></textarea>
+      <div id="splitResizer" class="resizer v" role="separator"
+           aria-orientation="vertical" aria-label="Resize editor and preview"
+           tabindex="0"></div>
       <div id="content" class="welcome"></div>
     </div>
   </main>
@@ -1932,6 +1947,102 @@ return He}()
 
   window.addEventListener('beforeunload', e => {
     if (files.some(f => f.dirty)){ e.preventDefault(); e.returnValue = ''; }
+  });
+
+  const STORE_KEY = 'mdv.panes.v1';
+  const $app = document.getElementById('app');
+  const $sideResizer = document.getElementById('sideResizer');
+  const $splitResizer = document.getElementById('splitResizer');
+  const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+  const readPanes = () => {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+    catch(_){ return {}; }
+  };
+  const writePanes = p => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(p)); } catch(_){}
+  };
+  const panes = readPanes();
+  if (typeof panes.sidebar === 'number'){
+    const w = clamp(panes.sidebar, 180, Math.max(240, window.innerWidth - 320));
+    document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+  }
+  if (typeof panes.split === 'number'){
+    const pct = clamp(panes.split, 10, 90);
+    document.documentElement.style.setProperty('--split-w', pct + '%');
+  }
+
+  function makeResizer(el, onMove){
+    let active = false;
+    el.addEventListener('pointerdown', e => {
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
+      active = true;
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      e.preventDefault();
+    });
+    el.addEventListener('pointermove', e => {
+      if (!active) return;
+      onMove(e.clientX);
+    });
+    const end = e => {
+      if (!active) return;
+      active = false;
+      try { el.releasePointerCapture(e.pointerId); } catch(_){}
+      el.classList.remove('dragging');
+      document.body.style.cursor = '';
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    el.addEventListener('dblclick', () => {
+      onMove(null);
+    });
+    el.addEventListener('keydown', e => {
+      const step = e.shiftKey ? 40 : 16;
+      if (e.key === 'ArrowLeft'){ e.preventDefault(); onMove('nudge', -step); }
+      else if (e.key === 'ArrowRight'){ e.preventDefault(); onMove('nudge', step); }
+      else if (e.key === 'Home'){ e.preventDefault(); onMove(null); }
+    });
+  }
+
+  makeResizer($sideResizer, (x, delta) => {
+    const maxW = Math.max(240, window.innerWidth - 320);
+    let w;
+    if (x === null){ w = 280; }
+    else if (x === 'nudge'){
+      w = parseFloat(getComputedStyle($sideResizer.previousElementSibling).width) + delta;
+    } else {
+      w = x - $app.getBoundingClientRect().left;
+    }
+    w = clamp(w, 180, maxW);
+    document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+    panes.sidebar = w;
+    writePanes(panes);
+  });
+
+  makeResizer($splitResizer, (x, delta) => {
+    const rect = $body.getBoundingClientRect();
+    if (!rect.width) return;
+    let pct;
+    if (x === null){ pct = 50; }
+    else if (x === 'nudge'){
+      const cur = parseFloat(getComputedStyle($editor).width) / rect.width * 100;
+      pct = cur + (delta / rect.width) * 100;
+    } else {
+      pct = (x - rect.left) / rect.width * 100;
+    }
+    pct = clamp(pct, 10, 90);
+    document.documentElement.style.setProperty('--split-w', pct + '%');
+    panes.split = pct;
+    writePanes(panes);
+  });
+
+  window.addEventListener('resize', () => {
+    if (typeof panes.sidebar === 'number'){
+      const maxW = Math.max(240, window.innerWidth - 320);
+      const w = clamp(panes.sidebar, 180, maxW);
+      document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+    }
   });
 
   $content.innerHTML = welcomeHTML;
