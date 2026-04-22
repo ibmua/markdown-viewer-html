@@ -1946,7 +1946,7 @@ return He}()
   });
 
   window.addEventListener('beforeunload', e => {
-    if (files.some(f => f.dirty)){ e.preventDefault(); e.returnValue = ''; }
+    if (files.length){ e.preventDefault(); e.returnValue = ''; }
   });
 
   const STORE_KEY = 'mdv.panes.v1';
