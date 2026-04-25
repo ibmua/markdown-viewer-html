@@ -1605,7 +1605,30 @@ return He}()
     if (m === 'view' || m === 'split') renderPreview();
   }
 
+  function captureScroll(f){
+    if (!f) return;
+    f.scroll = {
+      body:    $body.scrollTop,
+      content: $content.scrollTop,
+      editor:  $editor.scrollTop,
+      selStart: $editor.selectionStart,
+      selEnd:   $editor.selectionEnd,
+    };
+  }
+
+  function restoreScroll(f){
+    const s = (f && f.scroll) || {};
+    $body.scrollTop    = s.body    || 0;
+    $content.scrollTop = s.content || 0;
+    $editor.scrollTop  = s.editor  || 0;
+    if (typeof s.selStart === 'number'){
+      try { $editor.setSelectionRange(s.selStart, s.selEnd ?? s.selStart); }
+      catch(_){}
+    }
+  }
+
   function activate(id){
+    if (id !== activeId) captureScroll(cur());
     activeId = id;
     const f = cur();
     if (!f){
@@ -1620,7 +1643,7 @@ return He}()
     renderPreview();
     updateToolbar();
     renderSidebar();
-    $body.scrollTo(0, 0);
+    restoreScroll(f);
   }
 
   function closeFile(id){
