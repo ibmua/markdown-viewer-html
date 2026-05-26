@@ -17,6 +17,8 @@ app is one self-contained file you can double-click offline.
 - **Drag & drop** one or many `.md` files anywhere on the page
 - **File picker** (`Open files…`) for the clicky crowd
 - **Edit mode** — toggle Preview / Split / Edit. Split gives live-rendered preview as you type
+- **Rich editing mode** — edit the rendered document directly, with formatting
+  buttons for headings, bold/italic, links, lists, quotes, and code
 - **Save back to the original file** in Chromium-based browsers (File System Access API)
 - **Reload from disk** for local files opened with a browser file handle, so
   changes made by another editor can be pulled into the tab on request
@@ -47,6 +49,7 @@ Or just open the hosted copy on GitHub Pages (enable Pages → root / main).
 | <kbd>⌘</kbd>+<kbd>W</kbd> / <kbd>Ctrl</kbd>+<kbd>W</kbd> | Close active file |
 | <kbd>⌘</kbd>+<kbd>S</kbd> / <kbd>Ctrl</kbd>+<kbd>S</kbd> | Save (or Save As / Download fallback) |
 | <kbd>⌘</kbd>+<kbd>E</kbd> / <kbd>Ctrl</kbd>+<kbd>E</kbd> | Toggle editor |
+| <kbd>⌘</kbd>+<kbd>K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> | Add a link in Rich mode |
 | <kbd>⌘</kbd>+<kbd>V</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd> | Paste markdown as a new file |
 
 ## Saving edits
@@ -76,6 +79,17 @@ Files opened through plain file inputs, paste, or browsers without the File
 System Access API are snapshots, so the Reload button is disabled for those
 tabs. If the active file has unsaved edits, Reload asks before replacing them
 with the disk version.
+
+## Rich editing
+
+The **Rich** mode edits the rendered document directly and converts the result
+back to markdown after each change. It is intended for common GitHub-flavored
+markdown: headings, paragraphs, emphasis, links, lists, blockquotes, code
+blocks, tables, images, horizontal rules, and task checkboxes.
+
+Because markdown and browser-edited HTML do not map perfectly one-to-one, Rich
+mode may normalize spacing or rewrite some source formatting. Use **Edit** mode
+when exact source layout matters.
 
 ## Dependencies (all inlined)
 

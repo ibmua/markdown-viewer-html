@@ -1362,6 +1362,16 @@ return He}()
   #body.split #editor{flex:0 0 var(--split-w,50%);display:block;min-width:0}
   #body.edit #content{display:none}
   #body.split #content{flex:1 1 0;overflow:auto;min-width:0}
+  #wysiwyg{display:none;min-height:100%;outline:none}
+  #body.wysiwyg{overflow:auto}
+  #body.wysiwyg #content{display:none}
+  #body.wysiwyg #wysiwyg{display:block}
+  #wysiwyg:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  #richToolbar{display:none;align-items:center;gap:6px;flex-wrap:wrap;
+    padding:6px 16px;border-bottom:1px solid var(--border);background:var(--sidebar)}
+  #richToolbar.show{display:flex}
+  #richToolbar select{height:28px;border:1px solid var(--border);border-radius:6px;
+    background:var(--bg);color:var(--fg);font-size:12px;padding:0 8px}
 
   .welcome{max-width:640px;margin:60px auto;padding:0 32px;color:var(--muted)}
   .welcome h2{color:var(--fg);font-weight:600;margin-top:0}
@@ -1369,33 +1379,35 @@ return He}()
     border-radius:4px;padding:2px 6px;font-size:12px;font-family:ui-monospace,
     SFMono-Regular,Menlo,monospace;color:var(--fg)}
 
-  #content{max-width:900px;margin:0 auto;padding:32px 48px 120px}
+  #content,#wysiwyg{max-width:900px;margin:0 auto;padding:32px 48px 120px}
   #body.split #content{max-width:none;margin:0;padding:24px 32px}
-  #content h1,#content h2,#content h3,#content h4,#content h5,#content h6{
+  #content h1,#content h2,#content h3,#content h4,#content h5,#content h6,
+  #wysiwyg h1,#wysiwyg h2,#wysiwyg h3,#wysiwyg h4,#wysiwyg h5,#wysiwyg h6{
     margin-top:1.5em;margin-bottom:.6em;font-weight:600;line-height:1.25}
-  #content h1{font-size:2em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
-  #content h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
-  #content h3{font-size:1.25em}
-  #content h4{font-size:1em}
-  #content p,#content ul,#content ol,#content blockquote,#content pre,#content table{margin:0 0 16px}
-  #content ul,#content ol{padding-left:2em}
-  #content li+li{margin-top:.25em}
-  #content li>p{margin-top:16px}
-  #content blockquote{padding:0 1em;color:var(--muted);border-left:.25em solid var(--border)}
-  #content a{color:var(--accent);text-decoration:none}
-  #content a:hover{text-decoration:underline}
-  #content hr{height:.25em;padding:0;margin:24px 0;background:var(--border);border:0}
-  #content code{background:var(--code-bg);padding:.2em .4em;border-radius:6px;
+  #content h1,#wysiwyg h1{font-size:2em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
+  #content h2,#wysiwyg h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
+  #content h3,#wysiwyg h3{font-size:1.25em}
+  #content h4,#wysiwyg h4{font-size:1em}
+  #content p,#content ul,#content ol,#content blockquote,#content pre,#content table,
+  #wysiwyg p,#wysiwyg ul,#wysiwyg ol,#wysiwyg blockquote,#wysiwyg pre,#wysiwyg table{margin:0 0 16px}
+  #content ul,#content ol,#wysiwyg ul,#wysiwyg ol{padding-left:2em}
+  #content li+li,#wysiwyg li+li{margin-top:.25em}
+  #content li>p,#wysiwyg li>p{margin-top:16px}
+  #content blockquote,#wysiwyg blockquote{padding:0 1em;color:var(--muted);border-left:.25em solid var(--border)}
+  #content a,#wysiwyg a{color:var(--accent);text-decoration:none}
+  #content a:hover,#wysiwyg a:hover{text-decoration:underline}
+  #content hr,#wysiwyg hr{height:.25em;padding:0;margin:24px 0;background:var(--border);border:0}
+  #content code,#wysiwyg code{background:var(--code-bg);padding:.2em .4em;border-radius:6px;
     font-size:85%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-  #content pre{background:var(--code-bg);padding:16px;border-radius:6px;
+  #content pre,#wysiwyg pre{background:var(--code-bg);padding:16px;border-radius:6px;
     overflow:auto;font-size:85%;line-height:1.45}
-  #content pre code{background:transparent;padding:0;font-size:100%}
-  #content table{border-collapse:collapse;display:block;overflow:auto;width:max-content;max-width:100%}
-  #content th,#content td{border:1px solid var(--border);padding:6px 13px}
-  #content tr:nth-child(2n){background:var(--sidebar)}
-  #content img{max-width:100%;border-radius:6px}
-  #content input[type=checkbox]{margin-right:.4em}
-  #content .task-list-item{list-style:none;margin-left:-1.5em}
+  #content pre code,#wysiwyg pre code{background:transparent;padding:0;font-size:100%}
+  #content table,#wysiwyg table{border-collapse:collapse;display:block;overflow:auto;width:max-content;max-width:100%}
+  #content th,#content td,#wysiwyg th,#wysiwyg td{border:1px solid var(--border);padding:6px 13px}
+  #content tr:nth-child(2n),#wysiwyg tr:nth-child(2n){background:var(--sidebar)}
+  #content img,#wysiwyg img{max-width:100%;border-radius:6px}
+  #content input[type=checkbox],#wysiwyg input[type=checkbox]{margin-right:.4em}
+  #content .task-list-item,#wysiwyg .task-list-item{list-style:none;margin-left:-1.5em}
   .hidden{display:none !important}
 </style>
 </head>
@@ -1422,6 +1434,7 @@ return He}()
         <button class="btn small on" data-mode="view" aria-pressed="true">Preview</button>
         <button class="btn small" data-mode="split" aria-pressed="false">Split</button>
         <button class="btn small" data-mode="edit" aria-pressed="false">Edit</button>
+        <button class="btn small" data-mode="wysiwyg" aria-pressed="false">Rich</button>
       </div>
       <span class="path" id="curPath"></span>
       <span class="size" id="curSize"></span>
@@ -1433,12 +1446,29 @@ return He}()
       <strong>Unsaved changes.</strong>
       <span id="warnMsg">Edits live in this tab only — click <em>Download</em> to keep them.</span>
     </div>
+    <div id="richToolbar" aria-label="Rich text tools">
+      <select id="blockFmt" title="Block style" aria-label="Block style">
+        <option value="p">Paragraph</option>
+        <option value="h1">Heading 1</option>
+        <option value="h2">Heading 2</option>
+        <option value="h3">Heading 3</option>
+        <option value="blockquote">Quote</option>
+        <option value="pre">Code block</option>
+      </select>
+      <button class="btn small" data-rich-cmd="bold" title="Bold"><strong>B</strong></button>
+      <button class="btn small" data-rich-cmd="italic" title="Italic"><em>I</em></button>
+      <button class="btn small" data-rich-cmd="code" title="Inline code"><code>`</code></button>
+      <button class="btn small" data-rich-cmd="link" title="Link">Link</button>
+      <button class="btn small" data-rich-cmd="ul" title="Bulleted list">• List</button>
+      <button class="btn small" data-rich-cmd="ol" title="Numbered list">1. List</button>
+    </div>
     <div id="body">
       <textarea id="editor" spellcheck="false" placeholder="# Start typing markdown…"></textarea>
       <div id="splitResizer" class="resizer v" role="separator"
            aria-orientation="vertical" aria-label="Resize editor and preview"
            tabindex="0"></div>
       <div id="content" class="welcome"></div>
+      <div id="wysiwyg" contenteditable="true" spellcheck="true" aria-label="Rich markdown editor"></div>
     </div>
   </main>
   <div id="dropzone">Drop text files here</div>
@@ -1448,12 +1478,13 @@ return He}()
   const files = [];                 // {id,name,size,text,dirty,handle,lastModified}
   let activeId = null;
   let nextId = 1;
-  let mode = 'view';                // 'view' | 'split' | 'edit'
+  let mode = 'view';                // 'view' | 'split' | 'edit' | 'wysiwyg'
   let renderTimer = null;
 
   const $files    = document.getElementById('files');
   const $content  = document.getElementById('content');
   const $editor   = document.getElementById('editor');
+  const $wysiwyg  = document.getElementById('wysiwyg');
   const $body     = document.getElementById('body');
   const $toolbar  = document.getElementById('toolbar');
   const $curPath  = document.getElementById('curPath');
@@ -1463,6 +1494,8 @@ return He}()
   const $warnBar  = document.getElementById('warnBar');
   const $warnMsg  = document.getElementById('warnMsg');
   const $modeSeg  = document.getElementById('modeSeg');
+  const $richToolbar = document.getElementById('richToolbar');
+  const $blockFmt = document.getElementById('blockFmt');
   const $reloadBtn = document.getElementById('reloadBtn');
   const $saveBtn  = document.getElementById('saveBtn');
   const $dlBtn    = document.getElementById('downloadBtn');
@@ -1508,6 +1541,133 @@ return He}()
     <p>Files stay in the sidebar so you can switch between them. Nothing is
     uploaded anywhere — rendering happens locally in your browser.</p>`;
   const cur = () => files.find(f => f.id === activeId) || null;
+
+  const mdBlock = s => {
+    s = String(s || '').trim();
+    return s ? s + '\n\n' : '';
+  };
+  const cleanMarkdown = s => String(s || '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trimEnd();
+  const escapeMarkdownText = s => String(s || '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/([\\*_`\[\]])/g, '\\$1');
+  const inlineCodeMarkdown = s => {
+    const text = String(s || '').replace(/\n+/g, ' ');
+    const longest = Math.max(0, ...Array.from(text.matchAll(/`+/g), m => m[0].length));
+    const fence = '`'.repeat(longest + 1);
+    const pad = text.startsWith('`') || text.endsWith('`') ? ' ' : '';
+    return fence + pad + text + pad + fence;
+  };
+  const childMarkdown = (nodes, ctx = {}) =>
+    Array.from(nodes || []).map(node => nodeMarkdown(node, ctx)).join('');
+  const inlineMarkdown = el => cleanMarkdown(childMarkdown(el.childNodes, { inline: true }));
+
+  function tableMarkdown(table){
+    const rows = Array.from(table.querySelectorAll('tr'))
+      .map(row => Array.from(row.children).filter(c => /^(td|th)$/i.test(c.tagName)));
+    if (!rows.length || !rows[0].length) return '';
+    const width = Math.max(...rows.map(row => row.length));
+    const cell = el => cleanMarkdown(childMarkdown(el.childNodes, { inline: true }))
+      .replace(/\n+/g, ' ')
+      .replace(/\|/g, '\\|')
+      .trim();
+    const line = cells => '| ' + Array.from({ length: width }, (_, i) => cell(cells[i] || document.createElement('td'))).join(' | ') + ' |';
+    const out = [line(rows[0]), '| ' + Array.from({ length: width }, () => '---').join(' | ') + ' |'];
+    for (const row of rows.slice(1)) out.push(line(row));
+    return out.join('\n') + '\n\n';
+  }
+
+  function listMarkdown(list, ctx = {}){
+    const depth = ctx.depth || 0;
+    const ordered = list.tagName.toLowerCase() === 'ol';
+    let index = parseInt(list.getAttribute('start') || '1', 10);
+    if (!Number.isFinite(index)) index = 1;
+    let out = '';
+    for (const li of Array.from(list.children).filter(el => el.tagName.toLowerCase() === 'li')){
+      const marker = ordered ? `${index++}. ` : '- ';
+      out += listItemMarkdown(li, marker, depth);
+    }
+    return out + (ctx.listItem ? '' : '\n');
+  }
+
+  function listItemMarkdown(li, marker, depth){
+    const main = document.createElement('div');
+    const nested = [];
+    for (const node of li.childNodes){
+      if (node.nodeType === Node.ELEMENT_NODE && /^(ul|ol)$/i.test(node.tagName)){
+        nested.push(node);
+      } else {
+        main.appendChild(node.cloneNode(true));
+      }
+    }
+    const body = cleanMarkdown(childMarkdown(main.childNodes, { listItem: true, depth }))
+      .replace(/\n{2,}/g, '\n');
+    const lines = (body || '').split('\n');
+    const indent = '  '.repeat(depth);
+    const continuation = indent + ' '.repeat(marker.length);
+    let out = indent + marker + (lines[0] || '') + '\n';
+    for (const line of lines.slice(1)) out += continuation + line + '\n';
+    for (const child of nested) out += listMarkdown(child, { listItem: true, depth: depth + 1 });
+    return out;
+  }
+
+  function nodeMarkdown(node, ctx = {}){
+    if (node.nodeType === Node.TEXT_NODE) return escapeMarkdownText(node.nodeValue);
+    if (node.nodeType !== Node.ELEMENT_NODE) return '';
+    const el = node;
+    const tag = el.tagName.toLowerCase();
+    if (tag === 'br') return '  \n';
+    if (tag === 'input' && el.type === 'checkbox') return el.checked || el.hasAttribute('checked') ? '[x] ' : '[ ] ';
+    if (tag === 'strong' || tag === 'b') return `**${inlineMarkdown(el)}**`;
+    if (tag === 'em' || tag === 'i') return `*${inlineMarkdown(el)}*`;
+    if (tag === 'del' || tag === 's') return `~~${inlineMarkdown(el)}~~`;
+    if (tag === 'code'){
+      if (el.parentElement && el.parentElement.tagName.toLowerCase() === 'pre') return el.textContent || '';
+      return inlineCodeMarkdown(el.textContent || '');
+    }
+    if (tag === 'a'){
+      const href = el.getAttribute('href') || '';
+      const text = inlineMarkdown(el) || href;
+      return href ? `[${text}](${href.replace(/\)/g, '\\)')})` : text;
+    }
+    if (tag === 'img'){
+      const alt = el.getAttribute('alt') || '';
+      const src = el.getAttribute('src') || '';
+      return src ? `![${escapeMarkdownText(alt)}](${src.replace(/\)/g, '\\)')})` : '';
+    }
+    if (/^h[1-6]$/.test(tag)) return mdBlock(`${'#'.repeat(Number(tag[1]))} ${inlineMarkdown(el)}`);
+    if (tag === 'p') return ctx.listItem ? inlineMarkdown(el) + '\n' : mdBlock(inlineMarkdown(el));
+    if (tag === 'blockquote'){
+      const body = cleanMarkdown(childMarkdown(el.childNodes, { depth: ctx.depth || 0 }));
+      return body ? body.split('\n').map(line => line ? `> ${line}` : '>').join('\n') + '\n\n' : '';
+    }
+    if (tag === 'pre'){
+      const code = (el.querySelector('code') || el).textContent || '';
+      const cls = (el.querySelector('code') || el).className || '';
+      const lang = (cls.match(/language-([\w-]+)/) || [])[1] || '';
+      let fence = '```';
+      while (code.includes(fence)) fence += '`';
+      return `${fence}${lang}\n${code.replace(/\n$/, '')}\n${fence}\n\n`;
+    }
+    if (tag === 'ul' || tag === 'ol') return listMarkdown(el, ctx);
+    if (tag === 'li') return listItemMarkdown(el, '- ', ctx.depth || 0);
+    if (tag === 'table') return tableMarkdown(el);
+    if (tag === 'hr') return '---\n\n';
+    if (tag === 'thead' || tag === 'tbody' || tag === 'tfoot' || tag === 'tr') return childMarkdown(el.childNodes, ctx);
+    if (tag === 'th' || tag === 'td') return inlineMarkdown(el);
+    if (tag === 'div' || tag === 'section' || tag === 'article') return ctx.inline ? inlineMarkdown(el) : mdBlock(childMarkdown(el.childNodes, ctx));
+    return childMarkdown(el.childNodes, ctx);
+  }
+
+  function htmlToMarkdown(root){
+    const tmp = document.createElement('div');
+    tmp.innerHTML = DOMPurify.sanitize(root.innerHTML, { ADD_ATTR: ['target'] });
+    const text = cleanMarkdown(childMarkdown(tmp.childNodes));
+    return text ? text + '\n' : '';
+  }
 
   function renderSidebar(){
     if (files.length === 0){ $files.innerHTML = '<div class="empty">No files open</div>'; return; }
@@ -1565,6 +1725,16 @@ return He}()
     });
   }
 
+  function renderWysiwyg(){
+    const f = cur(); if (!f) return;
+    $wysiwyg.innerHTML = render(f.text);
+    $wysiwyg.querySelectorAll('a[href]').forEach(a => {
+      a.removeAttribute('target');
+      a.removeAttribute('rel');
+    });
+    updateBlockFormat();
+  }
+
   function updateToolbar(){
     $clearBtn.disabled = files.length === 0;
     const f = cur();
@@ -1598,6 +1768,8 @@ return He}()
     mode = m;
     $body.classList.toggle('edit',  m === 'edit');
     $body.classList.toggle('split', m === 'split');
+    $body.classList.toggle('wysiwyg', m === 'wysiwyg');
+    $richToolbar.classList.toggle('show', m === 'wysiwyg' && !!cur());
     $modeSeg.querySelectorAll('.btn').forEach(b => {
       const on = b.dataset.mode === m;
       b.classList.toggle('on', on);
@@ -1608,6 +1780,10 @@ return He}()
       if (f && $editor.value !== f.text) $editor.value = f.text;
       setTimeout(() => $editor.focus(), 0);
     }
+    if (m === 'wysiwyg'){
+      renderWysiwyg();
+      setTimeout(() => $wysiwyg.focus(), 0);
+    }
     if (m === 'view' || m === 'split') renderPreview();
   }
 
@@ -1617,6 +1793,7 @@ return He}()
       body:    $body.scrollTop,
       content: $content.scrollTop,
       editor:  $editor.scrollTop,
+      wysiwyg: $wysiwyg.scrollTop,
       selStart: $editor.selectionStart,
       selEnd:   $editor.selectionEnd,
     };
@@ -1627,6 +1804,7 @@ return He}()
     $body.scrollTop    = s.body    || 0;
     $content.scrollTop = s.content || 0;
     $editor.scrollTop  = s.editor  || 0;
+    $wysiwyg.scrollTop = s.wysiwyg || 0;
     if (typeof s.selStart === 'number'){
       try { $editor.setSelectionRange(s.selStart, s.selEnd ?? s.selStart); }
       catch(_){}
@@ -1641,12 +1819,14 @@ return He}()
       $content.classList.add('welcome');
       $content.innerHTML = welcomeHTML;
       $editor.value = '';
+      $wysiwyg.innerHTML = '';
       setMode('view'); updateToolbar(); renderSidebar();
       return;
     }
     $content.classList.remove('welcome');
     $editor.value = f.text;
     renderPreview();
+    if (mode === 'wysiwyg') renderWysiwyg();
     updateToolbar();
     renderSidebar();
     restoreScroll(f);
@@ -1825,7 +2005,7 @@ return He}()
   });
 
   window.addEventListener('paste', async e => {
-    if (document.activeElement === $editor) return;
+    if (document.activeElement === $editor || $wysiwyg.contains(document.activeElement)) return;
     const cd = e.clipboardData;
     const pastedFiles = [];
     if (cd?.items){
@@ -1921,6 +2101,137 @@ return He}()
     $editor.dispatchEvent(new Event('input'));
   });
 
+  let savedRichRange = null;
+  const wysiwygNode = node => {
+    if (!node) return null;
+    return node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+  };
+  const selectionInWysiwyg = () => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return false;
+    const node = wysiwygNode(sel.getRangeAt(0).commonAncestorContainer);
+    return node === $wysiwyg || $wysiwyg.contains(node);
+  };
+  function saveRichSelection(){
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || !selectionInWysiwyg()) return;
+    savedRichRange = sel.getRangeAt(0).cloneRange();
+  }
+  function restoreRichSelection(){
+    $wysiwyg.focus();
+    if (!savedRichRange) return;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRichRange);
+  }
+  function syncFromWysiwyg(){
+    const f = cur(); if (!f) return;
+    const next = htmlToMarkdown($wysiwyg);
+    if (f.text === next){
+      saveRichSelection();
+      return;
+    }
+    f.text = next;
+    f.size = new Blob([f.text]).size;
+    markDirty(f);
+    $curSize.textContent = fmtBytes(f.size);
+    saveRichSelection();
+  }
+  function updateBlockFormat(){
+    if (!$blockFmt || mode !== 'wysiwyg') return;
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || !selectionInWysiwyg()) return;
+    let el = wysiwygNode(sel.anchorNode);
+    while (el && el !== $wysiwyg){
+      const tag = el.tagName.toLowerCase();
+      if (/^(h1|h2|h3|blockquote|pre|p|li|div)$/.test(tag)){
+        $blockFmt.value = tag === 'li' || tag === 'div' ? 'p' : tag;
+        return;
+      }
+      el = el.parentElement;
+    }
+    $blockFmt.value = 'p';
+  }
+  function richCommand(cmd){
+    restoreRichSelection();
+    if (cmd === 'bold') document.execCommand('bold');
+    else if (cmd === 'italic') document.execCommand('italic');
+    else if (cmd === 'ul') document.execCommand('insertUnorderedList');
+    else if (cmd === 'ol') document.execCommand('insertOrderedList');
+    else if (cmd === 'code') applyInlineCode();
+    else if (cmd === 'link') applyLink();
+    syncFromWysiwyg();
+    updateBlockFormat();
+  }
+  function applyInlineCode(){
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const code = document.createElement('code');
+    code.textContent = range.collapsed ? 'code' : range.toString();
+    range.deleteContents();
+    range.insertNode(code);
+    range.setStartAfter(code);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  function applyLink(){
+    const url = prompt('Link URL');
+    if (url === null) return;
+    const href = url.trim();
+    if (!href){ document.execCommand('unlink'); return; }
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount && sel.getRangeAt(0).collapsed){
+      const text = prompt('Link text', href);
+      if (text === null) return;
+      document.execCommand('insertHTML', false, `<a href="${escHtml(href)}">${escHtml(text || href)}</a>`);
+    } else {
+      document.execCommand('createLink', false, href);
+    }
+  }
+  function setRichBlock(tag){
+    restoreRichSelection();
+    document.execCommand('formatBlock', false, tag);
+    syncFromWysiwyg();
+    updateBlockFormat();
+  }
+
+  $wysiwyg.addEventListener('input', syncFromWysiwyg);
+  $wysiwyg.addEventListener('keyup', () => { saveRichSelection(); updateBlockFormat(); });
+  $wysiwyg.addEventListener('mouseup', () => { saveRichSelection(); updateBlockFormat(); });
+  $wysiwyg.addEventListener('paste', e => {
+    e.preventDefault();
+    const html = e.clipboardData?.getData('text/html');
+    const text = e.clipboardData?.getData('text/plain') || '';
+    if (html){
+      document.execCommand('insertHTML', false, DOMPurify.sanitize(html));
+    } else {
+      document.execCommand('insertText', false, text);
+    }
+    syncFromWysiwyg();
+  });
+  $wysiwyg.addEventListener('keydown', e => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (!mod) return;
+    const k = e.key.toLowerCase();
+    if (k === 's'){ e.preventDefault(); e.stopPropagation(); doSave(); }
+    else if (k === 'k'){ e.preventDefault(); e.stopPropagation(); richCommand('link'); }
+  });
+  $richToolbar.addEventListener('mousedown', e => {
+    if (e.target.closest('button')) e.preventDefault();
+  });
+  $richToolbar.addEventListener('click', e => {
+    const btn = e.target.closest('[data-rich-cmd]');
+    if (btn) richCommand(btn.dataset.richCmd);
+  });
+  $blockFmt.addEventListener('change', () => setRichBlock($blockFmt.value));
+  document.addEventListener('selectionchange', () => {
+    if (mode !== 'wysiwyg') return;
+    saveRichSelection();
+    updateBlockFormat();
+  });
+
   async function ensureReadPermission(handle){
     if (!handle) return false;
     if (!handle.queryPermission || !handle.requestPermission) return true;
@@ -1957,7 +2268,8 @@ return He}()
       f.dirty = false;
       if (activeId === f.id){
         $editor.value = f.text;
-        renderPreview();
+        if (mode === 'wysiwyg') renderWysiwyg();
+        else renderPreview();
       }
       updateToolbar();
       renderSidebar();
