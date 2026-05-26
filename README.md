@@ -18,6 +18,8 @@ app is one self-contained file you can double-click offline.
 - **File picker** (`Open files…`) for the clicky crowd
 - **Edit mode** — toggle Preview / Split / Edit. Split gives live-rendered preview as you type
 - **Save back to the original file** in Chromium-based browsers (File System Access API)
+- **Reload from disk** for local files opened with a browser file handle, so
+  changes made by another editor can be pulled into the tab on request
 - **Download** a copy in any browser — and a warning bar appears the moment a file
   becomes dirty so you don't lose edits
 - **Paste markdown** from the clipboard with <kbd>⌘V</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd>
@@ -62,6 +64,18 @@ Browser JS can't silently write to your disk, so:
 
 A yellow "Unsaved changes" bar appears as soon as you type, and the browser
 will warn you if you try to close the tab with unsaved work.
+
+## Reloading from disk
+
+Use **Reload** to re-read the active file from disk without picking it again.
+This works when the browser gives the app a `FileSystemFileHandle`, which is
+the normal path for **Open files…** in Chromium-based browsers. Dragged files
+may also support it in modern Chromium.
+
+Files opened through plain file inputs, paste, or browsers without the File
+System Access API are snapshots, so the Reload button is disabled for those
+tabs. If the active file has unsaved edits, Reload asks before replacing them
+with the disk version.
 
 ## Dependencies (all inlined)
 

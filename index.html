@@ -1425,6 +1425,7 @@ return He}()
       </div>
       <span class="path" id="curPath"></span>
       <span class="size" id="curSize"></span>
+      <button class="btn small" id="reloadBtn" title="Reload from the original file">Reload</button>
       <button class="btn small" id="saveBtn" title="Save back to the original file (if browser supports it)">Save</button>
       <button class="btn small primary" id="downloadBtn" title="Download a copy">Download</button>
     </div>
@@ -1444,7 +1445,7 @@ return He}()
 </div>
 <script>
 (() => {
-  const files = [];                 // {id,name,size,text,html,dirty,handle}
+  const files = [];                 // {id,name,size,text,dirty,handle,lastModified}
   let activeId = null;
   let nextId = 1;
   let mode = 'view';                // 'view' | 'split' | 'edit'
@@ -1462,6 +1463,7 @@ return He}()
   const $warnBar  = document.getElementById('warnBar');
   const $warnMsg  = document.getElementById('warnMsg');
   const $modeSeg  = document.getElementById('modeSeg');
+  const $reloadBtn = document.getElementById('reloadBtn');
   const $saveBtn  = document.getElementById('saveBtn');
   const $dlBtn    = document.getElementById('downloadBtn');
   const $clearBtn = document.getElementById('clearBtn');
@@ -1584,6 +1586,10 @@ return He}()
     $saveBtn.title = f.handle
       ? 'Save back to the original file'
       : (hasFSA ? 'Save As… (pick a location)' : 'This browser cannot save in place — use Download');
+    $reloadBtn.disabled = !f.handle;
+    $reloadBtn.title = f.handle
+      ? 'Reload from the original file on disk'
+      : (hasFSA ? 'Open this file with Open files… to enable disk reload' : 'This browser cannot reload local files automatically');
     document.title = (f.dirty ? '● ' : '') + f.name + ' — MD Viewer';
   }
 
@@ -1672,6 +1678,7 @@ return He}()
       text: opts.text,
       dirty: false,
       handle: opts.handle || null,
+      lastModified: opts.lastModified || 0,
     };
     files.push(f);
     return f;
@@ -1683,7 +1690,13 @@ return He}()
     }
     try {
       const text = await file.text();
-      return addFile({ name: file.name, text, size: file.size, handle });
+      return addFile({
+        name: file.name,
+        text,
+        size: file.size,
+        handle,
+        lastModified: file.lastModified || 0,
+      });
     } catch(e){ console.error('read failed', file.name, e); return null; }
   }
 
@@ -1908,6 +1921,56 @@ return He}()
     $editor.dispatchEvent(new Event('input'));
   });
 
+  async function ensureReadPermission(handle){
+    if (!handle) return false;
+    if (!handle.queryPermission || !handle.requestPermission) return true;
+    const perm = await handle.queryPermission({ mode: 'read' });
+    if (perm === 'granted') return true;
+    return await handle.requestPermission({ mode: 'read' }) === 'granted';
+  }
+
+  async function doReload(){
+    const f = cur();
+    if (!f) return;
+    if (!f.handle){
+      alert('This file cannot be reloaded automatically. Open it with Open files… in a Chromium browser to keep a disk handle.');
+      return;
+    }
+    if (f.dirty && !confirm(`"${f.name}" has unsaved edits in this tab. Reload from disk and replace them?`)) return;
+
+    const label = $reloadBtn.textContent;
+    $reloadBtn.textContent = 'Reloading…';
+    $reloadBtn.disabled = true;
+    try {
+      if (!await ensureReadPermission(f.handle)) throw new Error('permission denied');
+      const file = await f.handle.getFile();
+      if (!isAcceptedFile(file)) throw new Error('the file no longer looks like text or markdown');
+      if (file.size > MAX_FILE_SIZE &&
+          !confirm(`"${file.name}" is ${fmtBytes(file.size)}. Large files can freeze the browser. Reload anyway?`)){
+        return;
+      }
+      const text = await file.text();
+      f.name = file.name || f.handle.name || f.name;
+      f.text = text;
+      f.size = file.size;
+      f.lastModified = file.lastModified || Date.now();
+      f.dirty = false;
+      if (activeId === f.id){
+        $editor.value = f.text;
+        renderPreview();
+      }
+      updateToolbar();
+      renderSidebar();
+    } catch(e){
+      console.error('reload failed', e);
+      alert(`Could not reload "${f.name}" from disk (${e && e.message || e}).`);
+    } finally {
+      $reloadBtn.textContent = label;
+      updateToolbar();
+      renderSidebar();
+    }
+  }
+
   async function doSave(){
     const f = cur(); if (!f || !f.dirty) return;
     if (f.handle){
@@ -1919,6 +1982,7 @@ return He}()
         }
         const w = await f.handle.createWritable();
         await w.write(f.text); await w.close();
+        f.lastModified = Date.now();
         f.dirty = false; updateToolbar(); renderSidebar();
         return;
       } catch(e){
@@ -1932,6 +1996,7 @@ return He}()
         const w = await h.createWritable();
         await w.write(f.text); await w.close();
         f.handle = h; f.name = h.name || f.name;
+        f.lastModified = Date.now();
         f.dirty = false; updateToolbar(); renderSidebar();
         return;
       } catch(e){
@@ -1954,6 +2019,7 @@ return He}()
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
 
+  $reloadBtn.addEventListener('click', doReload);
   $saveBtn.addEventListener('click', doSave);
   $dlBtn.addEventListener('click', () => { const f = cur(); if (f) triggerDownload(f); });
 
