@@ -1310,6 +1310,10 @@ return He}()
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn.primary:hover{filter:brightness(0.95)}
   .btn.small{padding:4px 8px;font-size:12px}
+  .btn svg{width:14px;height:14px;flex-shrink:0}
+  .btn.small svg{width:13px;height:13px}
+  .btn.busy svg{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .btn-row{display:flex;gap:6px;flex-wrap:wrap}
   .seg{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
   .seg .btn{border:none;border-radius:0}
@@ -1417,9 +1421,9 @@ return He}()
     <header>
       <h1>Markdown Viewer</h1>
       <div class="btn-row">
-        <button class="btn primary" id="openBtn">Open files…</button>
-        <button class="btn" id="newBtn" title="New empty file">New</button>
-        <button class="btn" id="clearBtn" title="Close all">Clear</button>
+        <button class="btn primary" id="openBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Open files…</button>
+        <button class="btn" id="newBtn" title="New empty file" aria-label="New empty file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></button>
+        <button class="btn" id="clearBtn" title="Close all files" aria-label="Close all files"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
     </header>
     <div id="files" role="list"></div>
@@ -1431,16 +1435,16 @@ return He}()
   <main id="main">
     <div id="toolbar" class="hidden">
       <div class="seg" id="modeSeg" role="group" aria-label="View mode">
-        <button class="btn small on" data-mode="view" aria-pressed="true">Preview</button>
-        <button class="btn small" data-mode="split" aria-pressed="false">Split</button>
-        <button class="btn small" data-mode="edit" aria-pressed="false">Edit</button>
-        <button class="btn small" data-mode="wysiwyg" aria-pressed="false">Rich</button>
+        <button class="btn small on" data-mode="view" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Preview</button>
+        <button class="btn small" data-mode="split" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"/></svg>Split</button>
+        <button class="btn small" data-mode="edit" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Edit</button>
+        <button class="btn small" data-mode="wysiwyg" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Rich</button>
       </div>
       <span class="path" id="curPath"></span>
       <span class="size" id="curSize"></span>
-      <button class="btn small" id="reloadBtn" title="Reload from the original file">Reload</button>
-      <button class="btn small" id="saveBtn" title="Save back to the original file (if browser supports it)">Save</button>
-      <button class="btn small primary" id="downloadBtn" title="Download a copy">Download</button>
+      <button class="btn small" id="reloadBtn" title="Reload from the original file" aria-label="Reload from the original file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+      <button class="btn small" id="saveBtn" title="Save back to the original file (if browser supports it)" aria-label="Save back to the original file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
+      <button class="btn small primary" id="downloadBtn" title="Download a copy" aria-label="Download a copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
     </div>
     <div id="warnBar" role="alert" aria-live="polite">
       <strong>Unsaved changes.</strong>
@@ -1458,9 +1462,9 @@ return He}()
       <button class="btn small" data-rich-cmd="bold" title="Bold"><strong>B</strong></button>
       <button class="btn small" data-rich-cmd="italic" title="Italic"><em>I</em></button>
       <button class="btn small" data-rich-cmd="code" title="Inline code"><code>`</code></button>
-      <button class="btn small" data-rich-cmd="link" title="Link">Link</button>
-      <button class="btn small" data-rich-cmd="ul" title="Bulleted list">• List</button>
-      <button class="btn small" data-rich-cmd="ol" title="Numbered list">1. List</button>
+      <button class="btn small" data-rich-cmd="link" title="Link" aria-label="Link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+      <button class="btn small" data-rich-cmd="ul" title="Bulleted list" aria-label="Bulleted list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+      <button class="btn small" data-rich-cmd="ol" title="Numbered list" aria-label="Numbered list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button>
     </div>
     <div id="body">
       <textarea id="editor" spellcheck="false" placeholder="# Start typing markdown…"></textarea>
@@ -2249,8 +2253,7 @@ return He}()
     }
     if (f.dirty && !confirm(`"${f.name}" has unsaved edits in this tab. Reload from disk and replace them?`)) return;
 
-    const label = $reloadBtn.textContent;
-    $reloadBtn.textContent = 'Reloading…';
+    $reloadBtn.classList.add('busy');
     $reloadBtn.disabled = true;
     try {
       if (!await ensureReadPermission(f.handle)) throw new Error('permission denied');
@@ -2277,7 +2280,7 @@ return He}()
       console.error('reload failed', e);
       alert(`Could not reload "${f.name}" from disk (${e && e.message || e}).`);
     } finally {
-      $reloadBtn.textContent = label;
+      $reloadBtn.classList.remove('busy');
       updateToolbar();
       renderSidebar();
     }
