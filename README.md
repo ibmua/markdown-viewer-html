@@ -12,6 +12,14 @@ app is one self-contained file you can double-click offline.
 
 ![Screenshot](screenshot.png)
 
+### Preparation mock
+
+The repository also includes [`preparation-mock.md`](preparation-mock.md), a small
+design-review document that exercises headings, a callout, a table, lists, code,
+and task checkboxes in the viewer.
+
+![Preparation mock rendered in the viewer](preparation-mock.png)
+
 ## Features
 
 - **Drag & drop** one or many `.md` files anywhere on the page
@@ -138,3 +146,8 @@ blue workspace, file selection, reading typography, empty-state actions and mobi
 layout while retaining offline operation and existing editing modes. Verified in
 headless Chrome on the actual file URL: new document, source edits, all four modes,
 light/dark desktop and 390px mobile, with no page errors or mobile page overflow.
+
+September 21, 2026 (Kyiv): added `preparation-mock.md` as a reusable visual smoke test
+and captured `preparation-mock.png` from the real viewer after opening that file through
+the browser file picker. The screenshot is included here so the repository landing page
+shows the editor with a representative document open.
