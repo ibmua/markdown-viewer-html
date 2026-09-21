@@ -1253,8 +1253,8 @@ return He}()
 </script>
 <style>
   :root{
-    --bg:#ffffff; --fg:#1f2328; --muted:#656d76; --border:#d0d7de;
-    --sidebar:#f6f8fa; --accent:#0969da; --hover:#eaeef2; --active:#ddf4ff;
+    --bg:#ffffff; --fg:#253349; --muted:#627086; --border:#dce3ec;
+    --sidebar:#f3f6fa; --accent:#315fc0; --hover:#e7edf5; --active:#e2ebfc;
     --code-bg:#f6f8fa; --warn-bg:#fff8c5; --warn-border:#d4a72c; --warn-fg:#633c01;
   }
   @media (prefers-color-scheme: dark){
@@ -1300,7 +1300,7 @@ return He}()
   #sidebar header{padding:14px 16px;border-bottom:1px solid var(--border);
     display:flex;flex-direction:column;gap:8px}
   #sidebar h1{font-size:14px;margin:0;font-weight:600;letter-spacing:.02em;
-    color:var(--muted);text-transform:uppercase}
+    color:var(--muted);text-transform:none}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
     padding:6px 10px;border:1px solid var(--border);border-radius:6px;
     background:var(--bg);color:var(--fg);cursor:pointer;font-size:13px;
@@ -1412,6 +1412,83 @@ return He}()
   #content img,#wysiwyg img{max-width:100%;border-radius:6px}
   #content input[type=checkbox],#wysiwyg input[type=checkbox]{margin-right:.4em}
   #content .task-list-item,#wysiwyg .task-list-item{list-style:none;margin-left:-1.5em}
+
+  /* Workspace design tokens and responsive presentation. Keep runtime offline. */
+  :root{--reading-width:860px;--ui-radius:8px;color-scheme:light dark}
+  html,body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}
+  #sidebar header{padding:24px 18px 18px;gap:22px;border-bottom:0}
+  #sidebar h1{display:flex;align-items:center;gap:10px;color:var(--fg);font-size:16px;letter-spacing:-.4px}
+  .brand-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--accent);color:white;font-size:15px;font-weight:750;letter-spacing:-1px}
+  .btn{min-height:34px;border-radius:var(--ui-radius);font-family:inherit}
+  .btn:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .btn.small{min-height:32px}
+  .btn-row{gap:7px}
+  #openBtn{flex:1}
+  .files-label{padding:8px 22px;color:var(--muted);font-size:12px;font-weight:600}
+  #files{padding:0 10px 12px}
+  .file-item{padding:10px 9px;margin-bottom:3px;min-height:40px;border:1px solid transparent}
+  .file-item.active{border-color:var(--border);box-shadow:inset 3px 0 var(--accent)}
+  .file-item .name{white-space:normal;overflow-wrap:anywhere}
+  .empty{text-align:left;padding:12px;color:var(--muted)}
+  .sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}
+  .sidebar-footer svg{width:14px;height:14px;flex-shrink:0}
+  #toolbar{padding:12px 20px;gap:12px;flex-wrap:wrap}
+  #toolbar .path{font-family:inherit;white-space:normal;overflow-wrap:anywhere;min-width:80px}
+  .seg{padding:3px;gap:2px;border:0;background:var(--sidebar);border-radius:10px}
+  .seg .btn{background:transparent;border-radius:7px;padding:5px 10px;color:var(--muted)}
+  .seg .btn+.btn{border-left:0}
+  .seg .btn.on{background:var(--bg);color:var(--accent);box-shadow:0 1px 3px #182b461c}
+  #downloadBtn{background:var(--bg);color:var(--fg);border-color:var(--border)}
+  #downloadBtn:hover{background:var(--hover)}
+  #content,#wysiwyg{max-width:var(--reading-width);padding:40px 48px 100px;font-size:16px;line-height:1.75;overflow-wrap:anywhere}
+  #content>:first-child,#wysiwyg>:first-child{margin-top:0}
+  #content h1,#wysiwyg h1{font-size:2.2em;letter-spacing:-1.1px;padding-bottom:.5em}
+  #content h2,#wysiwyg h2{font-size:1.45em;letter-spacing:-.4px;border-bottom:0}
+  #content blockquote,#wysiwyg blockquote{border-left:3px solid var(--accent);background:var(--sidebar);padding:12px 18px;border-radius:0 8px 8px 0}
+  #content blockquote>:last-child,#wysiwyg blockquote>:last-child{margin-bottom:0}
+  #content pre,#wysiwyg pre{border:1px solid var(--border);border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere}
+  #content pre code.hljs,#wysiwyg pre code.hljs{overflow:visible;white-space:pre-wrap}
+  #editor{background:var(--sidebar);line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+  #editor:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
+  #content.welcome{max-width:640px;margin:clamp(32px,12vh,120px) auto 0;padding:32px 40px}
+  .welcome-icon{width:64px;height:72px;border:1px solid var(--border);border-radius:10px;display:grid;place-items:center;color:var(--accent);background:var(--sidebar);margin-bottom:28px;font-size:23px;font-weight:700;box-shadow:5px 5px 0 var(--sidebar)}
+  #content.welcome h2{font-size:32px;letter-spacing:-1px;margin:0 0 16px;line-height:1.2}
+  #content.welcome .intro{font-size:16px;max-width:420px;margin-bottom:26px}
+  .welcome-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
+  .welcome-actions .btn{padding:9px 16px;font-size:14px}
+  .welcome-shortcuts{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:12px;padding-top:22px;border-top:1px solid var(--border)}
+  .welcome-shortcuts span{display:flex;align-items:center;gap:8px}
+  @media(max-width:850px){
+    #sidebar{width:min(var(--sidebar-w,230px),32vw)}
+    #sidebar header{padding:18px 12px;gap:16px}
+    #sidebar h1{font-size:14px}
+    #toolbar{gap:8px;padding:10px 12px}
+    #modeSeg{order:1;flex-basis:100%;justify-content:center}
+    #content,#wysiwyg{padding:28px 26px 80px}
+    #body.split #content,#editor{padding:22px}
+  }
+  @media(max-width:560px){
+    #app{flex-direction:column;height:100dvh}
+    #sidebar{width:100%;max-height:180px;flex-shrink:0;border-bottom:1px solid var(--border)}
+    #sidebar header{flex-direction:row;align-items:center;justify-content:space-between;padding:12px;gap:8px}
+    #sidebar h1{font-size:13px;gap:7px}.brand-mark{width:28px;height:28px}
+    #sidebar .btn{padding:6px 8px}#clearBtn{display:none}
+    .files-label,.sidebar-footer,#sideResizer{display:none}
+    #files:has(.empty){display:none}
+    #files{max-height:84px;padding:0 10px 6px}
+    .file-item{padding:6px 9px;min-height:34px}
+    #main{min-height:0}
+    #content.welcome{margin:24px auto 0;padding:24px}
+    #content.welcome h2{font-size:28px}
+    #content,#wysiwyg{padding:24px 20px 60px}
+    #body.split{flex-direction:column;overflow:auto}
+    #body.split #editor{flex:0 0 42%;min-height:160px;width:100%}
+    #body.split #content{flex:1 0 auto;overflow:visible;width:100%;border-top:1px solid var(--border)}
+    #body.split #splitResizer{display:none}
+    #toolbar .size{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){.btn.busy svg{animation:none}}
+
   .hidden{display:none !important}
 </style>
 </head>
@@ -1419,14 +1496,16 @@ return He}()
 <div id="app">
   <aside id="sidebar">
     <header>
-      <h1>Markdown Viewer</h1>
+      <h1><span class="brand-mark" aria-hidden="true">M↓</span>Markdown Viewer</h1>
       <div class="btn-row">
         <button class="btn primary" id="openBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Open files…</button>
         <button class="btn" id="newBtn" title="New empty file" aria-label="New empty file"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></button>
         <button class="btn" id="clearBtn" title="Close all files" aria-label="Close all files"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
     </header>
+    <div class="files-label">Your files</div>
     <div id="files" role="list"></div>
+    <div class="sidebar-footer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Local files. Nothing uploaded.</div>
     <input type="file" id="fileInput" multiple hidden>
   </aside>
   <div id="sideResizer" class="resizer v" role="separator"
@@ -1539,11 +1618,15 @@ return He}()
       return `<div style="color:var(--warn-fg);background:var(--warn-bg);padding:12px;border-radius:6px">Rendering failed: ${escHtml(e && e.message || String(e))}</div>`;
     }
   };
-  const welcomeHTML = `<h2>Open some markdown files</h2>
-    <p>Click <strong>Open files…</strong>, drag &amp; drop any text file
-    anywhere, or paste with <kbd>${modKey}V</kbd>.</p>
-    <p>Files stay in the sidebar so you can switch between them. Nothing is
-    uploaded anywhere — rendering happens locally in your browser.</p>`;
+  const welcomeHTML = `<div class="welcome-icon" aria-hidden="true">M↓</div>
+    <h2>A little space for your words.</h2>
+    <p class="intro">Read, write, and edit markdown. Drop a file anywhere to get started, or open one below.</p>
+    <div class="welcome-actions"><button class="btn primary" data-welcome="open">Open files…</button><button class="btn" data-welcome="new">＋ New document</button></div>
+    <div class="welcome-shortcuts"><span><kbd>${modKey}${isMac ? '' : '+'}O</kbd> Open a file</span><span><kbd>${modKey}${isMac ? '' : '+'}V</kbd> Paste markdown</span></div>`;
+  $content.addEventListener('click', e => {
+    const action = e.target.closest('[data-welcome]');
+    if (action) document.getElementById(action.dataset.welcome === 'open' ? 'openBtn' : 'newBtn').click();
+  });
   const cur = () => files.find(f => f.id === activeId) || null;
 
   const mdBlock = s => {
@@ -2451,6 +2534,25 @@ return He}()
 
   $content.innerHTML = welcomeHTML;
   renderSidebar(); updateToolbar();
+
+  // URL loader: ?fetch=<url>&name=<display name> (repeatable) — lets other local
+  // tools (e.g. Project City, http://127.0.0.1:8129/) open file contents directly.
+  (async () => {
+    const q = new URLSearchParams(location.search);
+    const urls = q.getAll('fetch');
+    if (!urls.length) return;
+    const names = q.getAll('name');
+    const added = [];
+    for (let i = 0; i < urls.length; i++){
+      try {
+        const r = await fetch(urls[i]);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const text = await r.text();
+        added.push(addFile({ name: names[i] || decodeURIComponent(urls[i].split('/').pop() || 'file.md'), text }));
+      } catch(e){ console.error('?fetch= load failed', urls[i], e); }
+    }
+    if (added.length) activate(added[0].id);
+  })();
 })();
 </script>
 </body>

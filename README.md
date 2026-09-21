@@ -41,6 +41,13 @@ app is one self-contained file you can double-click offline.
 
 Or just open the hosted copy on GitHub Pages (enable Pages → root / main).
 
+### URL loader (embedding)
+
+When served over HTTP, `index.html?fetch=<url>&name=<display name>` fetches the URL
+(repeatable, same-origin or CORS-allowed) and opens the content as a tab — this lets other
+tools embed the viewer. Used by Project City (`http://127.0.0.1:8129/` serves this file at
+`/mdview` and feeds it project files, including files read from TR over ssh).
+
 ## Keyboard shortcuts
 
 | Shortcut | Action |
@@ -108,3 +115,26 @@ and paste it into the corresponding inline `<script>` block.
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## Project structure and design
+
+`index.html` is the canonical, self-contained application. Its first script/style
+blocks contain vendored marked, DOMPurify and highlight.js; the final application
+style block owns the palette, layout and responsive rules. The body defines the
+sidebar, mode controls and editing surfaces. The final script owns in-memory files,
+file handles, rendering, rich/source conversion, saves and keyboard shortcuts.
+The `welcomeHTML` template and its delegated click handler reuse the existing Open
+and New actions. No build or external fonts are required.
+
+Design values live in CSS custom properties (`--bg`, `--fg`, `--accent`,
+`--reading-width`, `--ui-radius`); dark colors follow the OS media query.
+Below 560px the sidebar becomes a compact top file list and Split stacks vertically.
+`icon.svg` is the repository artwork; the application favicon is embedded in the HTML
+so copying only that file retains it. Project City's `/mdview` serves this application;
+there is no separate viewer source to update.
+
+September 21, 2026 (Kyiv): requested a modest design improvement. Refined the existing
+blue workspace, file selection, reading typography, empty-state actions and mobile
+layout while retaining offline operation and existing editing modes. Verified in
+headless Chrome on the actual file URL: new document, source edits, all four modes,
+light/dark desktop and 390px mobile, with no page errors or mobile page overflow.
